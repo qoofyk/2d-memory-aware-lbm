@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
 
     /*----------------Part II. Run Benchmark----------------------*/
     // Run the benchmark once "to warm up the machine".
-    for (int iT = 0; iT < numIter; ++iT) {
+    for (int iT = 0; iT < warmUpIter; ++iT) {
       #ifdef SAVE
         if (iT % tSave == 0) {
           printf("iT=%d, save before computing\n", iT);
