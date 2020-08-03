@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef _OPENMP
   NUM_THREADS = atoi(getenv("OMP_NUM_THREADS"));
-  my_domain_H = atoi(argv[6]);
+  my_domain_H = atoi(getenv("OMP_MY_DOMAIN_HEIGHT"));
   printf("my_domain_H=%d, NUM_THREADS=%d\n", my_domain_H, NUM_THREADS);
   omp_set_num_threads(NUM_THREADS);
   #pragma omp parallel
