@@ -88,6 +88,10 @@ void saveVel(Simulation* sim, char fName[]);
 void saveF(Simulation* sim, int iPop, char fName[]);
 
 /*------------------------add by Yuankun------------------------*/
+extern inline void collideNode(Node* node);
+extern inline void collide_stream_buf1_to_buf2(Simulation* sim, int iX, int iY);
+extern inline void collide_stream_buf2_to_buf1(Simulation* sim, int iX, int iY);
+
 void collideOMP(Simulation* sim);
 void propagateOMP(Simulation* sim);
 

@@ -242,9 +242,9 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "origin");
-    collision_func=&collide;
-    stream_func = &propagate;
+    sprintf(case_name, "fuse");
+    collision_func=&collideStream;
+    stream_func = &swapLattice;
 
     /*----------------Part I. Initialization----------------------*/
     // initialisation of a lx * ly simulation

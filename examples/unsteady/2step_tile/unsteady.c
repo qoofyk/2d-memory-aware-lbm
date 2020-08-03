@@ -242,9 +242,9 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "origin");
-    collision_func=&collide;
-    stream_func = &propagate;
+    sprintf(case_name, "step2-tile");
+    collision_func=&step2CollideStreamTile;
+    stream_func = NULL; //  No need to stream or swap lattice for 2 steps
 
     /*----------------Part I. Initialization----------------------*/
     // initialisation of a lx * ly simulation
@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
 
     /*----------------Part II. Run Benchmark----------------------*/
     // Run the benchmark once "to warm up the machine".
-    for (int iT = 0; iT < warmUpIter; ++iT) {
+    for (int iT = 0; iT < warmUpIter; iT += 2) {
       #ifdef SAVE
         if (iT % tSave == 0) {
           printf("iT=%d, save before computing\n", iT);
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
         }
       #endif
 
-        stream_func(&sim);
+        // stream_func(&sim);
 
       //save after stream
       #ifdef SAVE
@@ -317,7 +317,7 @@ int main(int argc, char *argv[]) {
     t[0] = get_cur_time();
 
     // the main loop over time steps
-    for (int iT = 0; iT < numIter; ++iT) {
+    for (int iT = 0; iT < numIter; iT += 2) {
 
         #ifdef ZGB
         // on the right boundary, outlet condition grad_x u = 0
@@ -327,8 +327,8 @@ int main(int argc, char *argv[]) {
         // step 3,4,5:compute rho, u and  update fp
         collision_func(&sim);
 
-        // step 2: streamming step
-        stream_func(&sim);
+        // step 2: streamming step, No need to swap lattice for 2 steps
+        // stream_func(&sim);
 
         // By default: periodic boundary conditions. In this case,
         //   this is important, because the upper and lower

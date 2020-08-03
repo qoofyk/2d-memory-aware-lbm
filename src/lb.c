@@ -70,7 +70,7 @@ void setDynamics(Simulation* sim, int iX, int iY, Dynamics *dyn) {
 
   // apply collision step to a lattice node (and simulate
   //   virtual dispatch)
-inline static void collideNode(Node* node) {
+inline void collideNode(Node* node) {
     node->dynamics->dynamicsFun(node->fPop,
                                 node->dynamics->selfData);
 }
@@ -207,4 +207,47 @@ void bgk(double* fPop, void* selfData) {
         fPop[iPop] += omega * computeEquilibrium (
                                   iPop, rho, ux, uy, uSqr );
     }
+}
+
+
+// add by Yuankun
+inline void collide_stream_buf1_to_buf2(Simulation* sim, int iX, int iY){
+
+  int iPop, nextX, nextY;
+
+  // __assume_aligned(&sim->tmpLattice[nextX][nextY].fPop[iPop], 64);
+  // __assume_aligned(&sim->lattice[iX][iY].fPop[iPop], 64);
+
+  collideNode(&(sim->lattice[iX][iY]));
+
+  // #pragma ivdep
+  // #pragma vector always
+  // #pragma vector nontemporal
+  for (iPop = 0; iPop < 9; ++iPop) {
+    nextX = iX + c[iPop][0];
+    nextY = iY + c[iPop][1];
+
+    sim->tmpLattice[nextX][nextY].fPop[iPop] =
+      sim->lattice[iX][iY].fPop[iPop];
+  }
+}
+
+inline void collide_stream_buf2_to_buf1(Simulation* sim, int iX, int iY){
+
+  int iPop, nextX, nextY;
+
+  // __assume_aligned(&sim->lattice[nextX][nextY].fPop[iPop], 64);
+  // __assume_aligned(&sim->tmpLattice[iX][iY].fPop[iPop], 64);
+
+  collideNode(&(sim->tmpLattice[iX][iY]));
+
+  // #pragma ivdep
+  // #pragma vector always
+  // #pragma vector nontemporal
+  for (iPop = 0; iPop < 9; ++iPop) {
+    nextX = iX + c[iPop][0];
+    nextY = iY + c[iPop][1];
+    sim->lattice[nextX][nextY].fPop[iPop] =
+      sim->tmpLattice[iX][iY].fPop[iPop];
+  }
 }
