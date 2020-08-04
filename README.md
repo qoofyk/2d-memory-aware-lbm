@@ -23,9 +23,16 @@ source ~/intel/compilers_and_libraries/linux/bin/compilervars.sh -arch intel64
 
 The input parameters are `Height`, `Width`, `warmUpIter`, `numIter`, `tile_size`
 
-For OMP code, need `export OMP_NUMTHREADS=8` and `export OMP_MY_DOMAIN_HEIGHT=4`
+For OMP code, need `export OMP_NUMTHREADS=8`
 ```
 cd 2d-memory-aware-lbm/examples/unsteady/origin
 make
 ./unsteady 100 100 100 100 0
+```
+
+Compile & Test
+```
+cd 2d-memory-aware-lbm/examples/unsteady
+sh compile.sh
+sh test.sh
 ```

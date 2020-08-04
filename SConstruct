@@ -94,7 +94,11 @@ if MPIparallel:
     palabos_library = LibraryGen( target  = palabosRoot+'/lib/plb_mpi',
                                   source  = sourceFiles )
 else:
-    palabos_library = LibraryGen( target  = palabosRoot+'/lib/plb',
+    if '-D_OPENMP' in flags:
+        palabos_library = LibraryGen( target  = palabosRoot+'/lib/plb_omp',
+                                  source  = sourceFiles )
+    else:
+        palabos_library = LibraryGen( target  = palabosRoot+'/lib/plb',
                                   source  = sourceFiles )
 
 local_objects = env.Object(source = projectFiles)

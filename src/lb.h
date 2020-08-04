@@ -30,7 +30,6 @@
 
 extern int tile;
 extern double *myrho1, *myrho2;
-extern int iT, count;
 extern int my_domain_H; // each thread's data domain's height
 extern int NUM_THREADS;
 /*------------------------End add by Yuankun------------------------*/
@@ -77,6 +76,24 @@ typedef struct {
     Node** lattice;           // lattice, points to raw memory
     Node** tmpLattice;        // tmp lasttice, points to raw memory
 } Simulation;
+
+/*---------------- Global variables -----------------*/
+extern int lx, ly;
+extern int obst_x, obst_y, obst_r;
+extern double uMax, Re, nu, omega;
+extern int numIter, tSave, warmUpIter;
+
+extern Dynamics       bulkDynamics;
+extern Dynamics       bounceBackDynamics;
+
+extern Dynamics upperBoundary;
+extern Dynamics lowerBoundary;
+extern Dynamics* leftBoundary;   // Those two objects are initialized in the
+extern Dynamics* rightBoundary;  //   function iniData()
+
+  // The main object containing the simulation
+extern Simulation sim;
+/*---------------- End original Global variables -----------------*/
 
 void constructSim(Simulation* sim, int lx, int ly);
 void destructSim(Simulation* sim);
@@ -125,4 +142,11 @@ double computeEquilibrium(int iPop, double rho,
   // bgk collision term
 void bgk(double* fPop, void* selfData);
 
+
+// init
+void setConstants(int argc, char *argv[]);
+void iniData();
+void freeData();
+void iniGeometry();
+void Hello();
 #endif

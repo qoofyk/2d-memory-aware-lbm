@@ -94,17 +94,17 @@ void step3CollideStreamTileOMP(Simulation* sim) {
   double ux1, uy1, ux2, uy2;
   int nextX, nextY;
   int row_index;
-  //compute each thread upper boundary line at iX=thread_block 1st c+s
+  //compute each thread upper boundary line at iX=my_domain_H 1st c+s
 
 // #define DEBUG_PRINT
 
 #ifdef _OPENMP
-#pragma omp parallel default(shared) reduction(+: total_values)
+#pragma omp parallel default(shared)
 {
   // ------------------ step1: Prepare ------------------------------//
   // 1st fused collision and streaming on last row of 1 thread block (0, 1, 2)
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = 0; iX <= lx; iX += thread_block){
+  for (iX = 0; iX <= lx; iX += my_domain_H){
     for (iY = 1; iY <= ly; ++iY) {
       // 1st fused c&s on me (x,y) and (x-1, y), except row x=0
       if (iX == 0){
@@ -310,17 +310,17 @@ void step3CollideStreamTileOMP(Simulation* sim) {
   // ------------------ End step1 ------------------------------//
 
   // ------------------ step2: compute bulk --------------------//
-  #pragma omp for private(iix, iiy, iX, iY, row_index, iPop, nextX, nextY) schedule(static, thread_block/tile)
+  #pragma omp for private(iix, iiy, iX, iY, row_index, iPop, nextX, nextY) schedule(static, my_domain_H/tile)
   for (iX = 1; iX <= lx; iX += tile) {
     for (iY = 1; iY <= ly; iY += tile) {
       for (iix = 0; iix < tile; ++iix){
-        row_index =  (iX+iix) % thread_block;
+        row_index =  (iX+iix) % my_domain_H;
         if ((row_index == 1) || (row_index == 2)) continue;
 
-        // from row 3, 4, ..., thread_block-1, 0
+        // from row 3, 4, ..., my_domain_H-1, 0
         for (iiy = 0; iiy < tile; ++iiy) {
 
-          if (row_index != 0 && row_index != (thread_block-1) ){
+          if (row_index != 0 && row_index != (my_domain_H-1) ){
             // 1st fused c&s
             // collide_stream_buf1_to_buf2(sim, iX+iix, iY+iiy);
 
@@ -380,7 +380,7 @@ void step3CollideStreamTileOMP(Simulation* sim) {
 
   // ------------------ step3: handle boundary --------------------//
   // compute 2nd c&s on iY=ly, row_index=2~tb-1 
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX){
 
     // 2nd fused collision and streaming
@@ -401,7 +401,7 @@ void step3CollideStreamTileOMP(Simulation* sim) {
   }
 
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = thread_block; iX <= lx; iX += thread_block){
+  for (iX = my_domain_H; iX <= lx; iX += my_domain_H){
     for (iY = 1; iY <= ly-2; iY++){
       // 3rd fused collision and streaming
       // collide_stream_buf1_to_buf2(sim, iX-1, iY);
@@ -435,7 +435,7 @@ void step3CollideStreamTileOMP(Simulation* sim) {
     } 
   }
 
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX){
     // 3rd fused collision and streaming
     iY = ly;

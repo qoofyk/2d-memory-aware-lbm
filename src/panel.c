@@ -143,7 +143,7 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
   int nextX, nextY;
 
 #ifdef _OPENMP
-#pragma omp parallel default(shared) reduction(+: total_values)
+#pragma omp parallel default(shared)
 {
   #ifdef ADDPAPI
     long long local_values[NUM_EVENT];
@@ -184,9 +184,9 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
       ERROR_RETURN(retval);
   #endif
 
-  //compute each thread right boundary line at iY=thread_block 1st c+s
+  //compute each thread right boundary line at iY=my_domain_H 1st c+s
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iY = thread_block; iY <= sim->ly; iY += thread_block){
+  for (iY = my_domain_H; iY <= sim->ly; iY += my_domain_H){
     for (iX = 1; iX <= sim->lx; ++iX) {
 
       #ifdef DEBUG_PRINT
@@ -205,12 +205,12 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
   // int schedule_thread_chunk = sim->lx/tile/NUM_THREADS;
   // printf("sim->lx=%d, tile=%d, NUM_THREADS=%d, \n", sim->lx, tile, NUM_THREADS);
   // fflush(stdout);
-  #pragma omp for private(iiy, iX, iY, iPop, nextX, nextY) schedule(static, thread_block/tile)
+  #pragma omp for private(iiy, iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H/tile)
   for (iY = 1; iY <= sim->ly; iY+=tile) {
     for (iX = 1; iX <= sim->lx; iX++) {
       for (iiy = 0; iiy < tile; iiy ++){
 
-        if ( (iY+iiy) % thread_block != 0){
+        if ( (iY+iiy) % my_domain_H != 0){
 
           #ifdef DEBUG_PRINT
             #ifdef _OPENMP
@@ -235,7 +235,7 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
             computeMacros(sim->tmpLattice[iX-1][iY+iiy-1].fPop, &myrho1[iY+iiy-1], &ux1, &uy1);
           }
 #endif
-          if ( (iY+iiy-1) % thread_block != 0){
+          if ( (iY+iiy-1) % my_domain_H != 0){
 
             #ifdef DEBUG_PRINT
               #ifdef _OPENMP
@@ -253,10 +253,10 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
     }// end of iX loop
   }// end of iY loop
 
-  //compute thread boundary line at iY=thread_block~ly-thread_block 2nd c+s
+  //compute thread boundary line at iY=my_domain_H~ly-my_domain_H 2nd c+s
   //NOTICE: 1~lx !!! use tmpLattice !!!
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iY = thread_block; iY < sim->ly; iY += thread_block){
+  for (iY = my_domain_H; iY < sim->ly; iY += my_domain_H){
     for (iX = 1; iX <= sim->lx; ++iX) {
 #ifdef ZGB
       //save rho
@@ -285,7 +285,7 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
 
   //Line iX=1~lx-1, y=ly need to compute one more time
   iY = ly;
-  #pragma omp for private(iX, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX<sim->lx; ++iX){
     // 2nd collision and streaming on line x, y
     collide_stream_buf2_to_buf1(sim, iX, iY);
@@ -337,7 +337,7 @@ void collide_tight_panel_iy_openmp(Simulation* sim) {
       collide_stream_buf2_to_buf1(sim, iX, iY);
   // }
 
-  // #pragma omp for private(iY, iPop, nextX, nextY) schedule(static, thread_block)
+  // #pragma omp for private(iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iY = 2; iY < sim->ly; ++iY){
 
 #ifdef ZGB

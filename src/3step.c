@@ -195,51 +195,12 @@ void step3CollideStreamOMP(Simulation* sim) {
 // #define DEBUG_PRINT
 
 #ifdef _OPENMP
-#pragma omp parallel default(shared) reduction(+: total_values)
+#pragma omp parallel default(shared)
 {
-  #ifdef ADDPAPI
-    long long local_values[NUM_EVENT];
-    long long local_extra_values[NUM_EVENT];
-    int event_codes[NUM_EVENT];
-    int EventSet = PAPI_NULL;
-    int retval;
-
-    int EventCode;
-    for (int i = 0; i < NUM_EVENT; ++i){
-      /* Convert to integer */
-      if (PAPI_event_name_to_code(native_name[i] , &EventCode) != PAPI_OK){
-        PAPI_perror(errstring);
-        ERROR_RETURN(retval);
-      }
-
-      event_codes[i] = EventCode;
-    }
-
-    /* Creating event set   */
-    if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    /* Add the array of events PAPI_TOT_INS and PAPI_TOT_CYC to the eventset*/
-    if ((retval = PAPI_add_events(EventSet, event_codes, NUM_EVENT)) != PAPI_OK){
-      PAPI_perror(errstring);
-      ERROR_RETURN(retval);
-    }
-
-    /* Reset the counting events in the Event Set */
-    if (PAPI_reset(EventSet) != PAPI_OK){
-      fprintf(stderr, "PAPI_reset error!\n");
-      exit(1);
-    }
-
-    /* Start counting */
-    if ( (retval=PAPI_start(EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-  #endif
-
   // ------------------ step1: Prepare ------------------------------//
   // 1st fused collision and streaming on last row of 1 thread block (0, 1, 2)
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = 0; iX <= lx; iX += thread_block){
+  for (iX = 0; iX <= lx; iX += my_domain_H){
     for (iY = 1; iY <= ly; ++iY) {
       // 1st fused c&s on me (x,y) and (x-1, y), except row x=0
       if (iX == 0){
@@ -445,14 +406,14 @@ void step3CollideStreamOMP(Simulation* sim) {
   // ------------------ End step1 ------------------------------//
 
   // ------------------ step2: compute bulk --------------------//
-  #pragma omp for private(iX, iY, row_index, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, row_index, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX) {
-    row_index =  iX % thread_block;
+    row_index =  iX % my_domain_H;
     if ((row_index == 1) || (row_index == 2)) continue;
-    // from row 3, 4, ..., thread_block-1, 0
+    // from row 3, 4, ..., my_domain_H-1, 0
     for (iY = 1; iY <= ly; ++iY) {
 
-      if (row_index != 0 && row_index != (thread_block-1) ){
+      if (row_index != 0 && row_index != (my_domain_H-1) ){
         // 1st fused c&s
         // collide_stream_buf1_to_buf2(sim, iX, iY);
 
@@ -510,7 +471,7 @@ void step3CollideStreamOMP(Simulation* sim) {
 
   // ------------------ step3: handle boundary --------------------//
   // compute 2nd c&s on iY=ly, row_index=2~tb-1 
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX){
 
     // 2nd fused collision and streaming
@@ -531,7 +492,7 @@ void step3CollideStreamOMP(Simulation* sim) {
   }
 
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = thread_block; iX <= lx; iX += thread_block){
+  for (iX = my_domain_H; iX <= lx; iX += my_domain_H){
     for (iY = 1; iY <= ly-2; iY++){
       // 3rd fused collision and streaming
       // collide_stream_buf1_to_buf2(sim, iX-1, iY);
@@ -565,7 +526,7 @@ void step3CollideStreamOMP(Simulation* sim) {
     } 
   }
 
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX){
     // 3rd fused collision and streaming
     iY = ly;
@@ -600,37 +561,6 @@ void step3CollideStreamOMP(Simulation* sim) {
     }
   }
   // ------------------ End step3 ------------------------------//
-
-  #ifdef ADDPAPI
-    /* read the counter values and store them in the values array */
-    if ( (retval=PAPI_read(EventSet, local_values)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    /* Stop counting, this reads from the counter as well as stop it. */
-    if ( (retval=PAPI_stop(EventSet, local_extra_values)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    if ( (retval=PAPI_remove_events(EventSet, event_codes, NUM_EVENT)) != PAPI_OK)
-    ERROR_RETURN(retval);
-
-    /* Free all memory and data structures, EventSet must be empty. */
-    if ( (retval=PAPI_destroy_eventset(&EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    #ifdef _OPENMP
-      int my_rank = omp_get_thread_num();
-      int thread_count = omp_get_num_threads();
-    #else
-      int my_rank = 0;
-      int thread_count = 1;
-    #endif
-
-    for(int i = 0; i < NUM_EVENT; ++i){
-      // printf("T%d: event[%d]=%lld\n", my_rank, i, value_CM[i]);
-      // fflush(stdout);
-      total_values[i] += local_values[i];
-    }
-  #endif
 }
 #else
     printf("No OPENMP used");

@@ -141,7 +141,7 @@ void step2CollideStream2(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) \
     private(iY, iPop, nextX, nextY) \
-    schedule(static, thread_block)
+    schedule(static, my_domain_H)
 #endif
     for (iY = 1; iY <= sim->ly; ++iY) {
         collide_stream_buf1_to_buf2(sim, iX, iY);
@@ -150,7 +150,7 @@ void step2CollideStream2(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) \
     private(iY, iPop, nextX, nextY) \
-    schedule(static, thread_block)
+    schedule(static, my_domain_H)
 #endif
     for (iY = 1; iY <= sim->ly; ++iY){
       if (iX > 1 && iY > 1){
@@ -177,7 +177,7 @@ void step2CollideStream2(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) \
     private(iX, iPop, nextX, nextY) \
-    schedule(static, thread_block)
+    schedule(static, my_domain_H)
 #endif
   for (iX = 1; iX < sim->lx; ++iX){
     // 2nd collision and streaming
@@ -198,7 +198,7 @@ void step2CollideStream2(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) \
   private(iY, iPop, nextX, nextY) \
-  schedule(static, thread_block)
+  schedule(static, my_domain_H)
 #endif
   for (iY = 2; iY < sim->ly; ++iY){
 
@@ -228,14 +228,14 @@ void step2CollideStreamOMP(Simulation* sim) {
   double ux1, uy1, ux2, uy2;
   int nextX, nextY;
 
-  //compute each thread upper boundary line at iX=thread_block 1st c+s
+  //compute each thread upper boundary line at iX=my_domain_H 1st c+s
 
 #ifdef _OPENMP
-#pragma omp parallel default(shared) reduction(+: total_values)
+#pragma omp parallel default(shared)
 {
   // compute thread boundaries
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = thread_block; iX <= lx; iX += thread_block){
+  for (iX = my_domain_H; iX <= lx; iX += my_domain_H){
     for (iY = 1; iY <= ly; ++iY) {
 
       #ifdef DEBUG_PRINT
@@ -265,11 +265,11 @@ void step2CollideStreamOMP(Simulation* sim) {
   }
 
   // compute bulk
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= lx; ++iX) {
     for (iY = 1; iY <= ly; ++iY) {
 
-      if (iX % thread_block != 0){
+      if (iX % my_domain_H != 0){
 
         #ifdef DEBUG_PRINT
           #ifdef _OPENMP
@@ -308,7 +308,7 @@ void step2CollideStreamOMP(Simulation* sim) {
             computeMacros(sim->tmpLattice[iX-1][iY-1].fPop, &myrho1[iY-1], &ux1, &uy1);
         }
 #endif
-        if ( (iX-1)%thread_block != 0){
+        if ( (iX-1)%my_domain_H != 0){
 
           #ifdef DEBUG_PRINT
             #ifdef _OPENMP
@@ -337,10 +337,10 @@ void step2CollideStreamOMP(Simulation* sim) {
     }// end of iY loop
   }// end of iX loop
 
-  //compute thread boundary line at iX=thread_block 2nd c+s
+  //compute thread boundary line at iX=my_domain_H 2nd c+s
   //NOTICE: 1~ly-1 !!! use tmpLattice !!!
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
-  for (iX = thread_block; iX < lx; iX += thread_block){
+  for (iX = my_domain_H; iX < lx; iX += my_domain_H){
     for (iY = 1; iY <= (ly - 1); ++iY) {
 
       #ifdef DEBUG_PRINT
@@ -371,7 +371,7 @@ void step2CollideStreamOMP(Simulation* sim) {
 
   // Line iX=1~lx-1, y=ly need to compute one more time
   iY = ly;
-  #pragma omp for private(iX, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX < lx; ++iX){
     // 2nd fused collision and streaming
     // collide_stream_buf2_to_buf1(sim, iX, iY);
@@ -398,7 +398,7 @@ void step2CollideStreamOMP(Simulation* sim) {
       collide_stream_buf2_to_buf1(sim, iX, iY);
   }
 
-  #pragma omp for private(iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iY = 2; iY < ly; ++iY){
 
 #ifdef ZGB

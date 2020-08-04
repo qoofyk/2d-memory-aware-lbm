@@ -45,6 +45,16 @@ typedef struct {
     double    rho, uPar;
 } PressureBCData;
 
+/*---------------- Global variables -----------------*/
+extern VelocityBCData zeroVelocityBoundary;
+
+  // These arrays contain the velocities that are to be imposed on 
+  //   the inlet (poiseuilleBoundary) and the outlet 
+  //   (pressureBoundary) of the channel
+extern VelocityBCData* poiseuilleBoundary;
+extern PressureBCData* pressureBoundary;
+/*---------------- End original Global variables -----------------*/
+
 /* All the implemented boundaries...                             */
 /*****************************************************************/
 

@@ -31,9 +31,9 @@ void collideStreamOMP(Simulation* sim) {
   int nextX, nextY;
 
 #ifdef _OPENMP
-#pragma omp parallel default(shared) reduction(+: total_values)
+#pragma omp parallel default(shared)
 {
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, thread_block)
+  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
   for (iX = 1; iX <= sim->lx; ++iX) {
     for (iY = 1; iY <= sim->ly; ++iY) {
       collideNode(&(sim->lattice[iX][iY]));

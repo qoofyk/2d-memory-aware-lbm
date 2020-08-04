@@ -65,9 +65,9 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "step2-tile");
-    collision_func=&step2CollideStreamTile;
-    stream_func = NULL; //  No need to stream or swap lattice for 2 steps
+    sprintf(case_name, "step2-line-omp");
+    collision_func=&step2CollideStreamOMP;
+    stream_func = NULL;
 
     /*----------------Part I. Initialization----------------------*/
     // initialisation of a lx * ly simulation

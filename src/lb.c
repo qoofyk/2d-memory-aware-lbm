@@ -43,11 +43,13 @@ void constructSim(Simulation* sim, int lx, int ly) {
     sim->lattice        = (Node**) calloc(lx+2, sizeof(Node*));
     sim->tmpLattice     = (Node**) calloc(lx+2, sizeof(Node*));
 
-    int iX, iY;
-    for (iX=0; iX<lx+2; ++iX) {
+    #ifdef _OPENMP
+    #pragma omp parallel for default(shared) schedule(static, my_domain_H)
+    #endif
+    for (int iX=0; iX<lx+2; ++iX) {
         sim->lattice[iX] = sim->memoryChunk + iX*(ly+2);
         sim->tmpLattice[iX] = sim->tmpMemoryChunk + iX*(ly+2);
-        for (iY=0; iY<ly+2; ++iY) {
+        for (int iY=0; iY<ly+2; ++iY) {
             constructNode(&(sim->lattice[iX][iY]));
             constructNode(&(sim->tmpLattice[iX][iY]));
         }
@@ -77,22 +79,20 @@ inline void collideNode(Node* node) {
 
   // apply collision step to all lattice nodes
 void collide(Simulation* sim) {
-    int iX, iY;
-    for (iX=1; iX<=sim->lx; ++iX) {
-        for (iY=1; iY<=sim->ly; ++iY) {
-            collideNode(&(sim->lattice[iX][iY]));
-        }
+  for (int iX=1; iX<=sim->lx; ++iX) {
+    for (int iY=1; iY<=sim->ly; ++iY) {
+      collideNode(&(sim->lattice[iX][iY]));
     }
+  }
 }
 
   // apply propagation step with help of temporary memory
 void propagate(Simulation* sim) {
-    int iX, iY, iPop;
     int lx = sim->lx;
     int ly = sim->ly;
-    for (iX=1; iX<=lx; ++iX) {
-        for (iY=1; iY<=ly; ++iY) {
-            for (iPop=0; iPop<9; ++iPop) {
+    for (int iX=1; iX<=lx; ++iX) {
+        for (int iY=1; iY<=ly; ++iY) {
+            for (int iPop=0; iPop<9; ++iPop) {
                 int nextX = iX + c[iPop][0];
                 int nextY = iY + c[iPop][1];
                 sim->tmpLattice[nextX][nextY].fPop[iPop] =
@@ -250,4 +250,45 @@ inline void collide_stream_buf2_to_buf1(Simulation* sim, int iX, int iY){
     sim->lattice[nextX][nextY].fPop[iPop] =
       sim->tmpLattice[iX][iY].fPop[iPop];
   }
+}
+
+void collideOMP(Simulation* sim) {
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+{
+  #pragma omp for schedule(static, my_domain_H)
+  for (int iX = 1; iX <= sim->lx; ++iX)
+    for (int iY = 1; iY <= sim->ly; ++iY) {
+      collideNode(&(sim->lattice[iX][iY]));
+    }
+}
+#else
+  printf("No OPENMP used");
+#endif
+}
+
+void propagateOMP(Simulation* sim) {
+  int lx = sim->lx;
+  int ly = sim->ly;
+
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+{
+  #pragma omp for schedule(static, my_domain_H)
+  for (int iX = 1; iX <= lx; ++iX)
+    for (int iY = 1; iY <= ly; ++iY)
+      for (int iPop = 0; iPop < 9; ++iPop) {
+        int nextX = iX + c[iPop][0];
+        int nextY = iY + c[iPop][1];
+        sim->tmpLattice[nextX][nextY].fPop[iPop] =
+          sim->lattice[iX][iY].fPop[iPop];
+      }
+}
+#else
+    printf("No OPENMP used");
+#endif
+  // exchange lattice and tmplattice
+  Node** swapLattice = sim->lattice;
+  sim->lattice = sim->tmpLattice;
+  sim->tmpLattice = swapLattice;
 }
