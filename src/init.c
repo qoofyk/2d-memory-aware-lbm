@@ -27,8 +27,8 @@ void setConstants(int argc, char *argv[]) {
 
   tSave  = 2;          // frequency of periodic saves to disk
 
-  printf("lx=%d, ly=%d, omega=%f, warmUpIter=%d, numIter=%d, tile=%d\n", 
-    lx, ly, omega, warmUpIter, numIter, tile);
+  printf("lx=%d, ly=%d, Memory=%f MB, omega=%f, warmUpIter=%d, numIter=%d, tile=%d\n", 
+    lx, ly, (lx * ly * 80) / 1024.0 / 1024, omega, warmUpIter, numIter, tile);
 
   #ifdef _OPENMP
     NUM_THREADS = atoi(getenv("OMP_NUM_THREADS"));

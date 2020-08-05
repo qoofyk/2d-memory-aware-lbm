@@ -3,11 +3,10 @@
 #include <math.h>
 #include "D2Q9.h"
 #include "lb.h"
-#include "assert.h"
 
+#if 1
 void step2CollideStreamTile(Simulation* sim) {
   unsigned int iX, iY, iPop;
-  // unsigned int tile = 32;
   int iix, iiy;
   int lx=sim->lx, ly=sim->ly;
   double ux1, uy1, ux2, uy2;
@@ -15,59 +14,123 @@ void step2CollideStreamTile(Simulation* sim) {
 
   for (iX = 1; iX <= sim->lx; iX += tile) {
     for (iY = 1; iY <= sim->ly; iY += tile) {
-      for (iix = 0; iix < tile; ++iix){
-        for (iiy = 0; iiy < tile; ++iiy){
+      for (iix = 0; iix < tile; iix++){
+        for (iiy = 0; iiy < tile; iiy++){
 
-          // 1st fused collision and streaming
-          collide_stream_buf1_to_buf2(sim, iX+iix, iY+iiy);
+          // step1: collision on this line y
+          collideNode(&(sim->lattice[iX+iix][iY+iiy]));
 
-          if ( (iX+iix) > 1 && (iY+iiy) > 1){
+          // step 2: stream from line x-1 to x
+          // #pragma ivdep
+          // #pragma vector always
+          // #pragma vector nontemporal
+          for (iPop = 0; iPop < 9; ++iPop) {
+            nextX = iX+iix + c[iPop][0];
+            nextY = iY+iiy + c[iPop][1];
+            sim->tmpLattice[nextX][nextY].fPop[iPop] =
+              sim->lattice[iX+iix][iY+iiy].fPop[iPop];
+          }
+
+          if (iX+iix>1 && iY+iiy>1){
 #ifdef ZGB
             //save rho
-            if( (iX+iix) == (lx-1) ){
+            if( (iX+iix)==(lx-1) ){
               //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
               computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho2[iY+iiy-1], &ux2, &uy2);
             }
-            if( (iX+iix) == lx ){
+            if( (iX+iix)==lx ){
               computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho1[iY+iiy-1], &ux1, &uy1);
             }
 #endif
-            // 2nd collision on line x-1, y-1
-            collide_stream_buf2_to_buf1(sim, iX+iix-1, iY+iiy-1);
+            // step 3: second collision on line x-1, y-1
+            // should be based on the result of first stream
+            // how to get velocity from direction 6 and 5(need 1 offset in x direction too)?
+            collideNode(&(sim->tmpLattice[iX+iix-1][iY+iiy-1]));
+
+            // another branch for iX=sim->lx-1 and iY=sim-lx-2
+
+            // step 4: second stream from  line y-1
+            // #pragma ivdep
+            // #pragma vector always
+            // #pragma vector nontemporal
+            for (iPop = 0; iPop < 9; ++iPop) {
+              nextX = iX + iix - 1 + c[iPop][0];
+              nextY = iY + iiy - 1 + c[iPop][1];
+              sim->lattice[nextX][nextY].fPop[iPop] =
+                sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop[iPop];
+            }
           }
         }
       }
     }// end of iY loop
   }// end of iX loop
 
-  // -----------Start Epilog for boundary---------------------
   // Line iX=1~lx-1, y=ly need to compute one more time
-  iY = ly;
+  // iY=sim->ly;
   for (iX = 1; iX < sim->lx; ++iX){
-    collide_stream_buf2_to_buf1(sim, iX, iY);
+    collideNode(&(sim->tmpLattice[iX][ly]));
+
+    // #pragma ivdep
+    // #pragma vector always
+    // #pragma vector nontemporal
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = ly + c[iPop][1];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[iX][ly].fPop[iPop];
+    }
   }
 
-  // Line iY=1~ly, iX=lx need to compute one more time
+  //Line iY=1~ly, iX=lx need to compute one more time
   // iX=sim->lx;
   //simple optimize
-  iX = lx; iY = 1;
-  collide_stream_buf2_to_buf1(sim, iX, iY);
+  iY=1;
+  collideNode(&(sim->tmpLattice[lx][iY]));
+  // #pragma ivdep
+  // #pragma vector always
+  // #pragma vector nontemporal
+  for (iPop = 0; iPop < 9; ++iPop) {
+    nextX = lx + c[iPop][0];
+    nextY = iY + c[iPop][1];
+    sim->lattice[nextX][nextY].fPop[iPop] =
+      sim->tmpLattice[lx][iY].fPop[iPop];
+  }
 
   for (iY = 2; iY < sim->ly; ++iY){
 
 #ifdef ZGB
-    // Compute a second order extrapolation on the right boundary
+    //Compute a second order extrapolation on the right boundary
     pressureBoundary[iY].rho = 4./3.* myrho1[iY] - 1./3.* myrho2[iY];
     pressureBoundary[iY].uPar = 0.;
 #endif
-    collide_stream_buf2_to_buf1(sim, iX, iY);
+    collideNode(&(sim->tmpLattice[lx][iY]));
+
+    // #pragma ivdep
+    // #pragma vector always
+    // #pragma vector nontemporal
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = lx + c[iPop][0];
+      nextY = iY + c[iPop][1];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[lx][iY].fPop[iPop];
+    }
   }
 
-  // compute lx, ly point
-  iX = lx; iY = ly;
-  collide_stream_buf2_to_buf1(sim, iX, iY);
-  // -----------End Epilog for boundary---------------------
+  //compute lx, ly point
+  collideNode(&(sim->tmpLattice[lx][ly]));
+
+  // #pragma ivdep
+  // #pragma vector always
+  // #pragma vector nontemporal
+  for (iPop = 0; iPop < 9; ++iPop) {
+    nextX = lx + c[iPop][0];
+    nextY = ly + c[iPop][1];
+    sim->lattice[nextX][nextY].fPop[iPop] =
+      sim->tmpLattice[lx][ly].fPop[iPop];
+  }
+
 }
+#endif
 
 void step2CollideStreamTileOMP(Simulation* sim) {
   unsigned int iX, iY, iPop;
@@ -81,45 +144,6 @@ void step2CollideStreamTileOMP(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel default(shared)
 {
-  #ifdef ADDPAPI
-    long long local_values[NUM_EVENT];
-    long long local_extra_values[NUM_EVENT];
-    int event_codes[NUM_EVENT];
-    int EventSet = PAPI_NULL;
-    int retval;
-
-    int EventCode;
-    for (int i = 0; i < NUM_EVENT; ++i){
-      /* Convert to integer */
-      if (PAPI_event_name_to_code(native_name[i] , &EventCode) != PAPI_OK){
-        PAPI_perror(errstring);
-        ERROR_RETURN(retval);
-      }
-
-      event_codes[i] = EventCode;
-    }
-
-    /* Creating event set   */
-    if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    /* Add the array of events PAPI_TOT_INS and PAPI_TOT_CYC to the eventset*/
-    if ((retval = PAPI_add_events(EventSet, event_codes, NUM_EVENT)) != PAPI_OK){
-      PAPI_perror(errstring);
-      ERROR_RETURN(retval);
-    }
-
-    /* Reset the counting events in the Event Set */
-    if (PAPI_reset(EventSet) != PAPI_OK){
-      fprintf(stderr, "PAPI_reset error!\n");
-      exit(1);
-    }
-
-    /* Start counting */
-    if ( (retval=PAPI_start(EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-  #endif
-
   #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static)
   for (iX = my_domain_H; iX <= lx; iX+=my_domain_H){
     for (iY = 1; iY <= ly; ++iY) {
@@ -340,40 +364,74 @@ void step2CollideStreamTileOMP(Simulation* sim) {
         sim->tmpLattice[iX][iY].fPop[iPop];
     }
   }
-
-  #ifdef ADDPAPI
-    /* read the counter values and store them in the values array */
-    if ( (retval=PAPI_read(EventSet, local_values)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    /* Stop counting, this reads from the counter as well as stop it. */
-    if ( (retval=PAPI_stop(EventSet, local_extra_values)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    if ( (retval=PAPI_remove_events(EventSet, event_codes, NUM_EVENT)) != PAPI_OK)
-    ERROR_RETURN(retval);
-
-    /* Free all memory and data structures, EventSet must be empty. */
-    if ( (retval=PAPI_destroy_eventset(&EventSet)) != PAPI_OK)
-      ERROR_RETURN(retval);
-
-    #ifdef _OPENMP
-      int my_rank = omp_get_thread_num();
-      int thread_count = omp_get_num_threads();
-    #else
-      int my_rank = 0;
-      int thread_count = 1;
-    #endif
-
-    for(int i = 0; i < NUM_EVENT; ++i){
-      // printf("T%d: event[%d]=%lld\n", my_rank, i, value_CM[i]);
-      // fflush(stdout);
-      total_values[i] += local_values[i];
-    }
-  #endif
-
 }
 #else
     printf("No OPENMP used");
 #endif
 }
+
+#if 0 // use inline become slower
+void step2CollideStreamTile(Simulation* sim) {
+  unsigned int iX, iY, iPop;
+  // unsigned int tile = 32;
+  int iix, iiy;
+  int lx=sim->lx, ly=sim->ly;
+  double ux1, uy1, ux2, uy2;
+  int nextX, nextY;
+
+  for (iX = 1; iX <= sim->lx; iX += tile) {
+    for (iY = 1; iY <= sim->ly; iY += tile) {
+      for (iix = 0; iix < tile; ++iix){
+        for (iiy = 0; iiy < tile; ++iiy){
+
+          // 1st fused collision and streaming
+          collide_stream_buf1_to_buf2(sim, iX+iix, iY+iiy);
+
+          if ( (iX+iix) > 1 && (iY+iiy) > 1){
+#ifdef ZGB
+            //save rho
+            if( (iX+iix) == (lx-1) ){
+              //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
+              computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho2[iY+iiy-1], &ux2, &uy2);
+            }
+            if( (iX+iix) == lx ){
+              computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho1[iY+iiy-1], &ux1, &uy1);
+            }
+#endif
+            // 2nd collision on line x-1, y-1
+            collide_stream_buf2_to_buf1(sim, iX+iix-1, iY+iiy-1);
+          }
+        }
+      }
+    }// end of iY loop
+  }// end of iX loop
+
+  // -----------Start Epilog for boundary---------------------
+  // Line iX=1~lx-1, y=ly need to compute one more time
+  iY = ly;
+  for (iX = 1; iX < sim->lx; ++iX){
+    collide_stream_buf2_to_buf1(sim, iX, iY);
+  }
+
+  // Line iY=1~ly, iX=lx need to compute one more time
+  // iX=sim->lx;
+  //simple optimize
+  iX = lx; iY = 1;
+  collide_stream_buf2_to_buf1(sim, iX, iY);
+
+  for (iY = 2; iY < sim->ly; ++iY){
+
+#ifdef ZGB
+    // Compute a second order extrapolation on the right boundary
+    pressureBoundary[iY].rho = 4./3.* myrho1[iY] - 1./3.* myrho2[iY];
+    pressureBoundary[iY].uPar = 0.;
+#endif
+    collide_stream_buf2_to_buf1(sim, iX, iY);
+  }
+
+  // compute lx, ly point
+  iX = lx; iY = ly;
+  collide_stream_buf2_to_buf1(sim, iX, iY);
+  // -----------End Epilog for boundary---------------------
+}
+#endif

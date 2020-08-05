@@ -65,8 +65,8 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "step3-line-omp");
-    collision_func=&step3CollideStreamOMP;
+    sprintf(case_name, "fuse-tile");
+    collision_func=&collideStreamTile;
     stream_func = &swapLattice;
 
     /*----------------Part I. Initialization----------------------*/
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
     /*----------------Part II. Run Benchmark----------------------*/
     // Run the benchmark once "to warm up the machine".
-    for (int iT = 0; iT < warmUpIter; iT += 3) {
+    for (int iT = 0; iT < warmUpIter; ++iT) {
       #ifdef SAVE
         if (iT % tSave == 0) {
           printf("iT=%d, save before computing\n", iT);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     t[0] = get_cur_time();
 
     // the main loop over time steps
-    for (int iT = 0; iT < numIter; iT += 3) {
+    for (int iT = 0; iT < numIter; ++iT) {
 
         #ifdef ZGB
         // on the right boundary, outlet condition grad_x u = 0
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
         // step 3,4,5:compute rho, u and  update fp
         collision_func(&sim);
 
-        // step 2: streamming step, Need to swap lattice for 2 steps
+        // step 2: streamming step
         stream_func(&sim);
 
         // By default: periodic boundary conditions. In this case,

@@ -126,8 +126,8 @@ int main(int argc, char *argv[]) {
       //save after stream
       #ifdef SAVE
         if (iT % tSave == 0) {
-          printf("iT=%d, save after stream, count=%d\n", iT);
-          sprintf(filename, "vel_%s_stream_%d.dat", case_name, count);
+          printf("iT=%d, save after stream\n", iT);
+          sprintf(filename, "vel_%s_stream_%d.dat", case_name, iT);
           saveVel(&sim, filename);
         }
       #endif

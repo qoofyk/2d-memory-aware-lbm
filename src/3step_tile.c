@@ -3,40 +3,82 @@
 #include <math.h>
 #include "D2Q9.h"
 #include "lb.h"
-#include "assert.h"
+
+#if 1
+void collideStreamTile(Simulation* sim) {
+  int lx = sim->lx, ly = sim->ly;
+  // Outer loops.
+  for (int outerX = 1; outerX <= lx; outerX += tile) {
+    for (int outerY = 1; outerY <= ly ; outerY += tile) {
+      // Inner loops.
+      for (int innerX=outerX;
+           innerX <= MIN(outerX + tile - 1, lx);
+           ++innerX)
+      {
+        for (int innerY = outerY;
+             innerY <= MIN(outerY + tile - 1, ly);
+             ++innerY)
+        {
+          collideNode(&(sim->lattice[innerX][innerY]));
+
+          for (int iPop = 0; iPop < 9; ++iPop) {
+            int nextX = innerX + c[iPop][0];
+            int nextY = innerY + c[iPop][1];
+
+            sim->tmpLattice[nextX][nextY].fPop[iPop] =
+              sim->lattice[innerX][innerY].fPop[iPop];
+          }
+        }
+      }
+    }
+  }
+}
+
 
 void step3CollideStreamTile(Simulation* sim) {
-  unsigned int iX, iY, iPop;
-  // unsigned int tile = 32;
+  int iX, iY, iPop;
   int iix, iiy;
-  int lx=sim->lx, ly=sim->ly;
-  double ux1, uy1, ux2, uy2;
+  int lx = sim->lx, ly = sim->ly;
   int nextX, nextY;
 
-  for (iX = 1; iX <= sim->lx; iX += tile) {
-    for (iY = 1; iY <= sim->ly; iY += tile) {
+  for (iX = 1; iX <= lx; iX += tile) {
+    for (iY = 1; iY <= ly; iY += tile) {
       for (iix = 0; iix < tile; ++iix){
         for (iiy = 0; iiy < tile; ++iiy){
           // 1st fused collision and streaming
-          collide_stream_buf1_to_buf2(sim, iX+iix, iY+iiy);
+          collideNode(&(sim->lattice[iX+iix][iY+iiy]));
+
+          for (iPop = 0; iPop < 9; ++iPop) {
+            nextX = iX+iix + c[iPop][0];
+            nextY = iY+iiy + c[iPop][1];
+
+            sim->tmpLattice[nextX][nextY].fPop[iPop] =
+              sim->lattice[iX+iix][iY+iiy].fPop[iPop];
+          }
 
           if ( (iX+iix) > 1 && (iY+iiy) > 1){
-#ifdef ZGB
-            //save rho
-            if ( (iX+iix) == (lx-1) ){
-              //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
-              computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho2[iY+iiy-1], &ux2, &uy2);
-            }
-            if ( (iX+iix) == lx ){
-              computeMacros(sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop, &myrho1[iY+iiy-1], &ux1, &uy1);
-            }
-#endif
+
             // 2nd collision on line x-1, y-1
-            collide_stream_buf2_to_buf1(sim, iX+iix-1, iY+iiy-1);
+            collideNode(&(sim->tmpLattice[iX+iix-1][iY+iiy-1]));
+
+            for (iPop = 0; iPop < 9; ++iPop) {
+              nextX = iX+iix-1 + c[iPop][0];
+              nextY = iY+iiy-1 + c[iPop][1];
+              sim->lattice[nextX][nextY].fPop[iPop] =
+                sim->tmpLattice[iX+iix-1][iY+iiy-1].fPop[iPop];
+            }
 
             if ( (iX+iix) > 2 && (iY+iiy) > 2){
               // 3rd collision on line x-2, y-2
-              collide_stream_buf1_to_buf2(sim, iX+iix-2, iY+iiy-2);
+              collideNode(&(sim->lattice[iX+iix-2][iY+iiy-2]));
+
+              for (iPop = 0; iPop < 9; ++iPop) {
+                nextX = iX+iix-2 + c[iPop][0];
+                nextY = iY+iiy-2 + c[iPop][1];
+
+                sim->tmpLattice[nextX][nextY].fPop[iPop] =
+                  sim->lattice[iX+iix-2][iY+iiy-2].fPop[iPop];
+              }
             }
           }
         }
@@ -48,7 +90,14 @@ void step3CollideStreamTile(Simulation* sim) {
   // Line iX=[1~lx-1], y=ly need to compute the second collision & stream
   iY = ly;
   for(iX = 1; iX < sim->lx; ++iX){
-    collide_stream_buf2_to_buf1(sim, iX, iY);
+    collideNode(&(sim->tmpLattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[iX][iY].fPop[iPop];
+    }
   }
 
   // Line iY=[1~ly], iX=lx need to compute the second collision & stream
@@ -56,27 +105,59 @@ void step3CollideStreamTile(Simulation* sim) {
   //simple optimize
   iX = lx;
   for (iY = 1; iY <= sim->ly; ++iY){
-    collide_stream_buf2_to_buf1(sim, iX, iY);
+    collideNode(&(sim->tmpLattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[iX][iY].fPop[iPop];
+    }
   }
 
   //-----------------------------------------------------------------------
   // Line iX=[1~lx-2], y=ly-1 need to compute the third collision & stream
   iY = ly-1;
   for (iX = 1; iX < (sim->lx-1); ++iX){
-    collide_stream_buf1_to_buf2(sim, iX, iY);
+    collideNode(&(sim->lattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+
+      sim->tmpLattice[nextX][nextY].fPop[iPop] =
+        sim->lattice[iX][iY].fPop[iPop];
+    }
   }
 
   // Line iY=[1~ly-1], iX=lx-1 need to compute the third collision & stream
   iX = lx-1;
   for (iY = 1; iY < sim->ly; ++iY){
-    collide_stream_buf1_to_buf2(sim, iX, iY);
+    collideNode(&(sim->lattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+
+      sim->tmpLattice[nextX][nextY].fPop[iPop] =
+        sim->lattice[iX][iY].fPop[iPop];
+    }
   }
 
   //-----------------------------------------------------------------------
   // Line iX=[1~lx-1], y=ly need to compute the third collision&stream
   iY = ly;
   for(iX = 1; iX < sim->lx; ++iX){
-    collide_stream_buf1_to_buf2(sim, iX, iY);
+    // collide_stream_buf1_to_buf2(sim, iX, iY);
+    collideNode(&(sim->lattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+
+      sim->tmpLattice[nextX][nextY].fPop[iPop] =
+        sim->lattice[iX][iY].fPop[iPop];
+    }
   }
 
   // Line iY=1~ly, iX=lx need to compute the third collision&stream
@@ -84,9 +165,18 @@ void step3CollideStreamTile(Simulation* sim) {
   // simple optimize
   iX = lx;
   for (iY = 1; iY <= sim->ly; ++iY){
-    collide_stream_buf1_to_buf2(sim, iX, iY);
+    collideNode(&(sim->lattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+
+      sim->tmpLattice[nextX][nextY].fPop[iPop] =
+        sim->lattice[iX][iY].fPop[iPop];
+    }
   }
 }
+#endif
 
 void step3CollideStreamTileOMP(Simulation* sim) {
   unsigned int iX, iY, iPop, iix, iiy;
@@ -476,3 +566,80 @@ void step3CollideStreamTileOMP(Simulation* sim) {
 #endif
 
 }// end of func
+
+
+#if 0 // use inline and become slower
+void step3CollideStreamTile(Simulation* sim) {
+  unsigned int iX, iY, iPop;
+  // unsigned int tile = 32;
+  int iix, iiy;
+  int lx=sim->lx, ly=sim->ly;
+  double ux1, uy1, ux2, uy2;
+  int nextX, nextY;
+
+  for (iX = 1; iX <= sim->lx; iX += tile) {
+    for (iY = 1; iY <= sim->ly; iY += tile) {
+      for (iix = 0; iix < tile; ++iix){
+        for (iiy = 0; iiy < tile; ++iiy){
+          // 1st fused collision and streaming
+          collide_stream_buf1_to_buf2(sim, iX+iix, iY+iiy);
+
+          if ( (iX+iix) > 1 && (iY+iiy) > 1){
+            
+            // 2nd collision on line x-1, y-1
+            collide_stream_buf2_to_buf1(sim, iX+iix-1, iY+iiy-1);
+
+            if ( (iX+iix) > 2 && (iY+iiy) > 2){
+              // 3rd collision on line x-2, y-2
+              collide_stream_buf1_to_buf2(sim, iX+iix-2, iY+iiy-2);
+            }
+          }
+        }
+      }
+    }// end of iY loop
+  }// end of iX loop
+
+  //-----------------------------------------------------------------------
+  // Line iX=[1~lx-1], y=ly need to compute the second collision & stream
+  iY = ly;
+  for(iX = 1; iX < sim->lx; ++iX){
+    collide_stream_buf2_to_buf1(sim, iX, iY);
+  }
+
+  // Line iY=[1~ly], iX=lx need to compute the second collision & stream
+  // iX=sim->lx;
+  //simple optimize
+  iX = lx;
+  for (iY = 1; iY <= sim->ly; ++iY){
+    collide_stream_buf2_to_buf1(sim, iX, iY);
+  }
+
+  //-----------------------------------------------------------------------
+  // Line iX=[1~lx-2], y=ly-1 need to compute the third collision & stream
+  iY = ly-1;
+  for (iX = 1; iX < (sim->lx-1); ++iX){
+    collide_stream_buf1_to_buf2(sim, iX, iY);
+  }
+
+  // Line iY=[1~ly-1], iX=lx-1 need to compute the third collision & stream
+  iX = lx-1;
+  for (iY = 1; iY < sim->ly; ++iY){
+    collide_stream_buf1_to_buf2(sim, iX, iY);
+  }
+
+  //-----------------------------------------------------------------------
+  // Line iX=[1~lx-1], y=ly need to compute the third collision&stream
+  iY = ly;
+  for(iX = 1; iX < sim->lx; ++iX){
+    collide_stream_buf1_to_buf2(sim, iX, iY);
+  }
+
+  // Line iY=1~ly, iX=lx need to compute the third collision&stream
+  // iX=sim->lx;
+  // simple optimize
+  iX = lx;
+  for (iY = 1; iY <= sim->ly; ++iY){
+    collide_stream_buf1_to_buf2(sim, iX, iY);
+  }
+}
+#endif

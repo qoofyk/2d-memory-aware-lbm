@@ -28,6 +28,9 @@
   #include <omp.h>
 #endif
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 extern int tile;
 extern double *myrho1, *myrho2;
 extern int my_domain_H; // each thread's data domain's height
@@ -115,6 +118,9 @@ void propagateOMP(Simulation* sim);
 void collideStream(Simulation* sim);
 void collideStreamOMP(Simulation* sim);
 void swapLattice(Simulation* sim);
+
+void collideStreamTile(Simulation* sim);
+void collideStreamTileOMP(Simulation* sim);
 
 void updateZeroGradientBoundary();
 void step2CollideStream(Simulation* sim);
