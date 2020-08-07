@@ -39,8 +39,8 @@ void setConstants(int argc, char *argv[]) {
     my_domain_H = lx / NUM_THREADS;
     printf("my_domain_H=%d, NUM_THREADS=%d\n", my_domain_H, NUM_THREADS);
     omp_set_num_threads(NUM_THREADS);
-    #pragma omp parallel
-      Hello();
+    // #pragma omp parallel
+    //   Hello();
   #endif
 }
 
