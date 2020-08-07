@@ -11,14 +11,12 @@ void collideStreamTile(Simulation* sim) {
   for (int outerX = 1; outerX <= lx; outerX += tile) {
     for (int outerY = 1; outerY <= ly ; outerY += tile) {
       // Inner loops.
-      for (int innerX=outerX;
-           innerX <= MIN(outerX + tile - 1, lx);
-           ++innerX)
-      {
-        for (int innerY = outerY;
-             innerY <= MIN(outerY + tile - 1, ly);
-             ++innerY)
-        {
+      int innerX_max = MIN(outerX + tile - 1, lx);
+      for (int innerX = outerX; innerX <= innerX_max; ++innerX) {
+        
+        int innerY_max = MIN(outerY + tile - 1, ly);
+        for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
+
           collideNode(&(sim->lattice[innerX][innerY]));
 
           for (int iPop = 0; iPop < 9; ++iPop) {

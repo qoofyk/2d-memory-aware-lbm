@@ -22,11 +22,14 @@ source ~/intel/compilers_and_libraries/linux/bin/compilervars.sh -arch intel64
 # Verification
 
 Uncomment the `#define SAVE` in unsteady.c within one algorithm folders and code will generate output for each iteration.
-The input parameters are `Height`, `Width`, `warmUpIter`, `numIter`, `tile_size`
-You can verify with larger Height or Width or longer warmUpIter.
-Use the zgb data to verify, since this is the begining status when calling different algorithm function
-E.g., we test with origin, 2step and 3step.
 
+The input parameters are `Height`, `Width`, `warmUpIter`, `numIter`, `tile_size`
+
+You can verify with larger Height or Width or longer warmUpIter.
+
+Use the zgb data to verify, since this is the begining status when calling different algorithm function
+
+E.g., we test with origin, 2step and 3step.
 ```
 cd 2d-memory-aware-lbm/examples/unsteady/origin or 2step or 3step or 3step_tile
 make

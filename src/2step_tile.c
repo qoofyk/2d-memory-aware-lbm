@@ -132,6 +132,211 @@ void step2CollideStreamTile(Simulation* sim) {
 }
 #endif
 
+#if 1 //use unrolling and remove %
+void step2CollideStreamTileOMP(Simulation* sim) {
+  int lx = sim->lx, ly = sim->ly;
+
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+{
+  int iX, iY, iPop, iix, iiy;
+  int nextX, nextY;
+
+  #ifdef ZGB
+  double ux1, uy1, ux2, uy2;
+  #endif
+  
+  int tid = omp_get_thread_num();
+  int my_lx[2];
+  my_lx[0] = 1 + tid * my_domain_H;
+  my_lx[1] = (tid + 1) * my_domain_H;
+
+  // ------------------ step I : Preprocess intersection area ------------------------------//
+  // 1st fused collision and streaming on last row of 1 thread's data domain
+  iX = my_lx[1];
+  for (iY = 1; iY <= ly; ++iY) {
+    collideNode(&(sim->lattice[iX][iY]));
+
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+
+      sim->tmpLattice[nextX][nextY].fPop[iPop] =
+        sim->lattice[iX][iY].fPop[iPop];
+    }
+  }
+  #pragma omp barrier
+  // ------------------ End step I ------------------------------//
+
+  // ------------------ step II: Main Area Computation --------------------//
+  // Outer loops.
+  for (int outerX = my_lx[0]; outerX <= my_lx[1]; outerX += tile) {
+    for (int outerY = 1; outerY <= ly ; outerY += tile) {
+      // Inner loops.
+      int innerX_max = MIN(outerX + tile - 1, my_lx[1]);
+      for (int innerX = outerX; innerX <= innerX_max; ++innerX) {
+
+        int innerY_max = MIN(outerY + tile - 1, ly);
+
+        if (innerX == my_lx[1]) {
+          for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
+            if (innerY > 1){
+              #ifdef ZGB
+              //save rho
+              if ( innerX == (lx - 1) ){
+                //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
+                computeMacros(sim->tmpLattice[innerX-1][innerY-1].fPop, &myrho2[innerY-1], &ux2, &uy2);
+              }
+              if ( innerX == lx ){
+                computeMacros(sim->tmpLattice[innerX-1][innerY-1].fPop, &myrho1[innerY-1], &ux1, &uy1);
+              }
+              #endif
+
+              // 2nd fused c&s
+              collideNode(&(sim->tmpLattice[innerX - 1][innerY - 1]));
+              for (iPop = 0; iPop < 9; ++iPop) {
+                nextX = innerX - 1 + c[iPop][0];
+                nextY = innerY - 1 + c[iPop][1];
+                sim->lattice[nextX][nextY].fPop[iPop] =
+                  sim->tmpLattice[innerX - 1][innerY - 1].fPop[iPop];
+              }
+            }
+          }
+        }
+        else if (innerX == my_lx[0]) {
+          for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
+            // 1st fused collision and streaming
+            collideNode(&(sim->lattice[innerX][innerY]));
+            for (iPop = 0; iPop < 9; ++iPop) {
+              nextX = innerX + c[iPop][0];
+              nextY = innerY + c[iPop][1];
+
+              sim->tmpLattice[nextX][nextY].fPop[iPop] =
+                sim->lattice[innerX][innerY].fPop[iPop];
+            }
+          }
+        }
+        else {
+          for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
+            // 1st fused collision and streaming
+            collideNode(&(sim->lattice[innerX][innerY]));
+            for (iPop = 0; iPop < 9; ++iPop) {
+              nextX = innerX + c[iPop][0];
+              nextY = innerY + c[iPop][1];
+
+              sim->tmpLattice[nextX][nextY].fPop[iPop] =
+                sim->lattice[innerX][innerY].fPop[iPop];
+            }
+
+            if (innerY > 1) {
+              // 2nd fused c&s
+              collideNode(&(sim->tmpLattice[innerX - 1][innerY - 1]));
+              for (iPop = 0; iPop < 9; ++iPop) {
+                nextX = innerX - 1 + c[iPop][0];
+                nextY = innerY - 1 + c[iPop][1];
+                sim->lattice[nextX][nextY].fPop[iPop] =
+                  sim->tmpLattice[innerX - 1][innerY - 1].fPop[iPop];
+              }
+            }
+          }
+        }
+
+      } // end of innerX loop
+    }// end of iY loop
+  }// end of iX loop
+  #pragma omp barrier
+  // ------------------ End step II ------------------------------//
+
+  // ------------------ step III: handle intersection area --------------------//
+  // III.1 Righmost Column iX=my_lx[0], iY=ly need to compute one more time
+  iX = my_lx[0]; iY = ly;
+  // 2nd collision and streaming
+  collideNode(&(sim->tmpLattice[iX][iY]));
+  for (iPop = 0; iPop < 9; ++iPop) {
+    nextX = iX + c[iPop][0];
+    nextY = iY + c[iPop][1];
+    sim->lattice[nextX][nextY].fPop[iPop] =
+      sim->tmpLattice[iX][iY].fPop[iPop];
+  }
+  #pragma omp barrier
+  
+  // III.2 Other data are within each data domain: compute 2nd c+s
+  if (my_lx[1] != lx) {
+    // III.2.1.1 Row my_lx[1] at iX = my_domain_H 
+    iX = my_lx[1];
+    for (iY = 1; iY <= (ly-1); ++iY) {
+      // 2nd collision and streaming
+      collideNode(&(sim->tmpLattice[iX][iY]));
+      for (iPop = 0; iPop < 9; ++iPop) {
+        nextX = iX + c[iPop][0];
+        nextY = iY + c[iPop][1];
+        sim->lattice[nextX][nextY].fPop[iPop] =
+          sim->tmpLattice[iX][iY].fPop[iPop];
+      }
+    }
+
+    // III.2.1.2 compute rightmost column
+    iY = ly;
+    for (iX = my_lx[0] + 1; iX <= my_lx[1]; ++iX) {
+      // 2nd collision and streaming
+      collideNode(&(sim->tmpLattice[iX][iY]));
+
+      for (iPop = 0; iPop < 9; ++iPop) {
+        nextX = iX + c[iPop][0];
+        nextY = iY + c[iPop][1];
+        sim->lattice[nextX][nextY].fPop[iPop] =
+          sim->tmpLattice[iX][iY].fPop[iPop];
+      }
+    }
+  }
+  else {
+    // III.2.2.1 Row my_lx[1] at iX = lx 2nd c&s
+    iX = lx; iY = 1;
+    collideNode(&(sim->tmpLattice[iX][iY]));
+    for (iPop = 0; iPop < 9; ++iPop) {
+      nextX = iX + c[iPop][0];
+      nextY = iY + c[iPop][1];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[iX][iY].fPop[iPop];
+    }
+
+    for (iY = 2; iY < ly; ++iY){
+      #ifdef ZGB
+        //Compute a second order extrapolation on the right boundary
+        pressureBoundary[iY].rho = 4./3.* myrho1[iY] - 1./3.* myrho2[iY];
+        pressureBoundary[iY].uPar = 0.;
+      #endif
+        // 2nd collision and streaming
+        collideNode(&(sim->tmpLattice[iX][iY]));
+        for (iPop = 0; iPop < 9; ++iPop) {
+          nextX = iX + c[iPop][0];
+          nextY = iY + c[iPop][1];
+          sim->lattice[nextX][nextY].fPop[iPop] =
+            sim->tmpLattice[iX][iY].fPop[iPop];
+        }
+    }
+
+    // III.2.2.1 rightmost column 2nd c&s
+    iY = ly;
+    for (iX = my_lx[0] + 1; iX <= my_lx[1]; ++iX) {
+      collideNode(&(sim->tmpLattice[iX][iY]));
+
+      for (iPop = 0; iPop < 9; ++iPop) {
+        nextX = iX + c[iPop][0];
+        nextY = iY + c[iPop][1];
+        sim->lattice[nextX][nextY].fPop[iPop] =
+          sim->tmpLattice[iX][iY].fPop[iPop];
+      }
+    }
+  }
+}
+#else
+    printf("No OPENMP used\n");
+#endif
+}
+#endif
+
+#if 0
 void step2CollideStreamTileOMP(Simulation* sim) {
   unsigned int iX, iY, iPop;
   // unsigned int tile = 32;
@@ -369,6 +574,7 @@ void step2CollideStreamTileOMP(Simulation* sim) {
     printf("No OPENMP used");
 #endif
 }
+#endif
 
 #if 0 // use inline become slower
 void step2CollideStreamTile(Simulation* sim) {
