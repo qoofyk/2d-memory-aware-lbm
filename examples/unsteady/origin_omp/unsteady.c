@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "origin");
+    sprintf(case_name, "originOMP");
     collision_func=&collideOMP;
     stream_func = &propagateOMP;
 
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
     
     printf("After %d iterations: %f Mega site updates per second, Running time (s) = %f\n", 
-      numIter, (lx * ly * numIter) / (t[1] - t[0]) / 1.e6, t[1] - t[0]);
+      numIter, (1.e-6 * lx * ly * numIter) / (t[1] - t[0]), t[1] - t[0]);
 
     destructSim(&sim);
     freeData();
