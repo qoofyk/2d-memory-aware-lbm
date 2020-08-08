@@ -22,6 +22,7 @@ echo "3step_tile"
 echo
 
 export OMP_NUM_THREADS=2
+export OMP_PROC_BIND=spread
 echo "origin_omp"
 ./origin_omp/unsteady 400 400 60 60 20
 echo

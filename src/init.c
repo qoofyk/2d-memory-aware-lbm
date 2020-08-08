@@ -25,7 +25,7 @@ void setConstants(int argc, char *argv[]) {
   nu    = uMax * 2.*obst_r / Re;  // kinematic fluid viscosity
   omega = 1. / (3*nu+1./2.);      // relaxation parameter
 
-  tSave  = 2;          // frequency of periodic saves to disk
+  tSave  = 1;          // frequency of periodic saves to disk
 
   printf("lx=%d, ly=%d, Memory=%f MB, omega=%f, warmUpIter=%d, numIter=%d, tile=%d\n", 
     lx, ly, (lx * ly * 80) / 1024.0 / 1024, omega, warmUpIter, numIter, tile);
@@ -56,9 +56,9 @@ void iniData() {
     rightBoundary = (Dynamics*) calloc(ly+2, sizeof(Dynamics));
 
 #ifdef ZGB
-  //add by Yuankun
-  myrho1 = (double *) calloc(ly, sizeof(double));
-  myrho2 = (double *) calloc(ly, sizeof(double));
+    //add by Yuankun
+    myrho1 = (double *) calloc(ly, sizeof(double));
+    myrho2 = (double *) calloc(ly, sizeof(double));
 #endif
 
     #ifdef _OPENMP

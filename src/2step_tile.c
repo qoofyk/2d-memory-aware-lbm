@@ -3,6 +3,7 @@
 #include <math.h>
 #include "D2Q9.h"
 #include "lb.h"
+#include "boundaries.h"
 
 #if 1
 void step2CollideStreamTile(Simulation* sim) {
@@ -132,7 +133,7 @@ void step2CollideStreamTile(Simulation* sim) {
 }
 #endif
 
-#if 1 //use unrolling and remove %
+#if 1 // use unrolling and remove %, support tile_size doesn't need to divide exactly to lx or ly
 void step2CollideStreamTileOMP(Simulation* sim) {
   int lx = sim->lx, ly = sim->ly;
 
@@ -182,11 +183,7 @@ void step2CollideStreamTileOMP(Simulation* sim) {
           for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
             if (innerY > 1){
               #ifdef ZGB
-              //save rho
-              if ( innerX == (lx - 1) ){
-                //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
-                computeMacros(sim->tmpLattice[innerX-1][innerY-1].fPop, &myrho2[innerY-1], &ux2, &uy2);
-              }
+              // save rho
               if ( innerX == lx ){
                 computeMacros(sim->tmpLattice[innerX-1][innerY-1].fPop, &myrho1[innerY-1], &ux1, &uy1);
               }
@@ -229,6 +226,14 @@ void step2CollideStreamTileOMP(Simulation* sim) {
             }
 
             if (innerY > 1) {
+              #ifdef ZGB
+              // save rho
+              if ( innerX == (lx - 1) ){
+                //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
+                computeMacros(sim->tmpLattice[innerX-1][innerY-1].fPop, &myrho2[innerY-1], &ux2, &uy2);
+              }
+              #endif
+
               // 2nd fused c&s
               collideNode(&(sim->tmpLattice[innerX - 1][innerY - 1]));
               for (iPop = 0; iPop < 9; ++iPop) {

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "D2Q9.h"
 #include "lb.h"
+#include "boundaries.h"
 #include "assert.h"
 
 // immediately compute iX-1, iY-1

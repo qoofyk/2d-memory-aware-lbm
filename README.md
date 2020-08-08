@@ -59,3 +59,8 @@ cd 2d-memory-aware-lbm/examples/unsteady
 sh compile.sh
 sh test.sh
 ```
+
+# Post operation on job output
+```
+less seq_tile=16.txt | grep 'Mega' | cut -d ":" -f 2 | cut -d " " -f 2
+```

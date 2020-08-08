@@ -144,8 +144,9 @@ void saveVel(Simulation* sim, char fName[]) {
     FILE* oFile = fopen(fName, "w");
     int iX, iY;
     double ux, uy, uNorm, rho;
-    for (iY=1; iY<=sim->ly; ++iY) {
-       for (iX=1; iX<=sim->lx; ++iX) {
+    
+    for (iX=1; iX<=sim->lx; ++iX) {
+        for (iY=1; iY<=sim->ly; ++iY) {
            computeMacros(sim->lattice[iX][iY].fPop, &rho, &ux, &uy);
            uNorm = sqrt(ux*ux+uy*uy);
            fprintf(oFile, "%f ", uNorm);

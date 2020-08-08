@@ -45,9 +45,6 @@ void collideStreamTile(Simulation* sim) {
           collideNode(&(sim->lattice[iX+iix][iY+iiy]));
 
           // step 2: stream from line x-1 to x
-          // #pragma ivdep
-          // #pragma vector always
-          // #pragma vector nontemporal
           for (int iPop = 0; iPop < 9; ++iPop) {
             int nextX = iX+iix + c[iPop][0];
             int nextY = iY+iiy + c[iPop][1];
@@ -61,6 +58,48 @@ void collideStreamTile(Simulation* sim) {
 }
 #endif
 
+// support tile_size doesn't need to divide exactly to lx or ly
+void collideStreamTileOMP(Simulation* sim) {
+
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+{
+  int iX, iY, iPop, iix, iiy;
+  int nextX, nextY;
+
+  int tid = omp_get_thread_num();
+  int my_lx[2];
+  my_lx[0] = 1 + tid * my_domain_H;
+  my_lx[1] = (tid + 1) * my_domain_H;
+
+  for (int outerX = my_lx[0]; outerX <= my_lx[1]; outerX += tile) {
+    for (int outerY = 1; outerY <= ly ; outerY += tile) {
+      // Inner loops.
+      int innerX_max = MIN(outerX + tile - 1, my_lx[1]);
+      for (int innerX = outerX; innerX <= innerX_max; ++innerX) {
+
+        int innerY_max = MIN(outerY + tile - 1, ly);
+        for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
+          // fused collision and streaming
+          collideNode(&(sim->lattice[innerX][innerY]));
+          for (iPop = 0; iPop < 9; ++iPop) {
+            nextX = innerX + c[iPop][0];
+            nextY = innerY + c[iPop][1];
+
+            sim->tmpLattice[nextX][nextY].fPop[iPop] =
+              sim->lattice[innerX][innerY].fPop[iPop];
+          }
+        }
+      }
+    }
+  }
+}
+#else
+    printf("No OPENMP used");
+#endif
+}
+
+#if 0
 void collideStreamTileOMP(Simulation* sim) {
 
 #ifdef _OPENMP
@@ -76,9 +115,6 @@ void collideStreamTileOMP(Simulation* sim) {
           collideNode(&(sim->lattice[iX+iix][iY+iiy]));
 
           // step 2: stream from line x-1 to x
-          // #pragma ivdep
-          // #pragma vector always
-          // #pragma vector nontemporal
           for (int iPop = 0; iPop < 9; ++iPop) {
             int nextX = iX+iix + c[iPop][0];
             int nextY = iY+iiy + c[iPop][1];
@@ -93,5 +129,5 @@ void collideStreamTileOMP(Simulation* sim) {
 #else
     printf("No OPENMP used");
 #endif
-
 }
+#endif
