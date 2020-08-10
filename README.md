@@ -60,6 +60,16 @@ sh compile.sh
 sh test.sh
 ```
 
+# Experiments
+## Bridges
+```
+cd 2d-memory-aware-lbm/examples/unsteady/experiments/bridges/omp_square
+DIM=14336 CODE=3step_tile_omp TILE=64 bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
+
+Or
+sh submit_all.sh
+```
+
 # Post operation on job output
 ```
 less seq_tile=16.txt | grep 'Mega' | cut -d ":" -f 2 | cut -d " " -f 2
