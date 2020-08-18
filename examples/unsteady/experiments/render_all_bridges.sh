@@ -23,6 +23,6 @@ crop bridges_seq_square.pdf
 
 for DIM in 112 224 448 896 1792 3584 7168 14336; do
   python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > omp_square_dim_${DIM}.csv
-  python3 ${root_dir}/render_mflups.py ./omp_square_dim_${DIM}.csv --ylim "(0,570)" --no-ylog
+  python3 ${root_dir}/render_mflups.py ./omp_square_dim_${DIM}.csv --ylim "(0,600)" --no-ylog
   crop omp_square_dim_${DIM}.pdf
 done

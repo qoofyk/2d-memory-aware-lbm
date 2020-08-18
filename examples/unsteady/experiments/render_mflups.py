@@ -12,7 +12,6 @@ Created on Sat Aug  8 19:30:57 2020
 import matplotlib
 # matplotlib.use('PDF')
 import matplotlib.pyplot as plt
-
 import argparse
 import ast
 import csv
@@ -22,7 +21,11 @@ import os
 
 def csv2rec(filename):
     # print(filename)
-    return np.recfromcsv(filename, dtype=None, delimiter=',', names=True)
+    return np.recfromtxt(filename, dtype=None, delimiter=',', names=True)
+
+def str_csv2rec(filename):
+    # print(filename)
+    return np.genfromtxt(filename, dtype=str, delimiter=',')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('filename')
@@ -82,46 +85,14 @@ markers = [
 
 colors = [
     # Built in colors
-    # 'gold',
+    'gold', # no use
     'tab:blue',
-    'tab:orange',
-    'tab:green',
     'tab:red',
-    'm',
     'tab:brown',
-    'darkslategray',
+    'tab:green',
+    'mediumorchid',
+    'orangered',
     'navy',
-    'orange',
-    # 'yellow',
-    'fuchsia',
-    # 'cyan',
-    'darkslategrey',
-    'lawngreen',
-    'deeppink',
-    'darkred',
-    'grey',
-
-    # Tableau colors
-    # (0.968,0.714,0.824),
-    (0.882,0.478,0.470),
-    (0.565,0.663,0.792),
-    (0.635,0.635,0.635),
-    (0.678,0.545,0.788),
-    (1.000,0.620,0.290),
-    (0.859,0.859,0.553),
-    (0.769,0.612,0.580),
-    (0.478,0.757,0.424),
-    (0.427,0.800,0.855),
-    (0.929,0.592,0.792),
-    (0.929,0.400,0.364),
-    (0.447,0.620,0.808),
-    (0.780,0.780,0.780),
-    (0.773,0.690,0.835),
-    (0.882,0.616,0.353),
-    (0.804,0.800,0.365),
-    (0.659,0.471,0.431),
-    (0.404,0.749,0.361),
-    (0.137,0.122,0.125),
 ] * 10
 
 # matplotlib.rcParams["font.family"] = "STIXGeneral"
@@ -165,16 +136,17 @@ nodes = getattr(data, args.xdata)
 if args.xscale:
     nodes = nodes * args.xscale
 columns = list(data.dtype.names)
-# print(columns)
 columns.remove(args.xdata)
 
 if args.legend:
-    legend_raw = csv2rec(args.legend)
-    legend_label = dict(zip(legend_raw.name, legend_raw.label))
-    legend_visible = dict(zip(legend_raw.name, legend_raw.visible))
+    # print(args.legend)
+    legend_raw = str_csv2rec(args.legend)
+    # print(legend_raw)
+    legend_label = dict(zip(legend_raw[:, 0], legend_raw[:, 1]))
+    legend_visible = dict(zip(legend_raw[:, 0], legend_raw[:, 2]))
     legend_idx = {}
     next_idx = 0
-    for name in legend_raw.name:
+    for name in legend_raw[:, 0]:
         if legend_visible[name]:
             legend_idx[name] = next_idx
             next_idx += 1
@@ -292,5 +264,5 @@ plt.grid(True, color='black', linestyle='--', linewidth=0.5, dashes=(1, 5))
 output_filename = '%s.pdf' % os.path.splitext(args.filename)[0]
 print('Generating %s' % output_filename)
 plt.savefig(output_filename)
-plt.show()
-# plt.close()
+# plt.show()
+plt.close()

@@ -41,7 +41,7 @@ class Parser:
         self.tile = tile
         self.machine = machine
 
-        self.header = []
+        self.header = ['origin', 'fuse', 'fuse tile', '2step', '2step tile', '3step', '3step tile']
         self.table = collections.defaultdict(lambda: collections.defaultdict(lambda: float('-inf')))
         self.max_mflups_tile = collections.defaultdict(lambda: collections.defaultdict(lambda: 1))
     
@@ -124,8 +124,8 @@ class Parser:
             if 'tile' in name:
                 name = name[0 : name.index('tile') + 4]
 
-            if name not in self.header:
-                self.header.append(name)
+            # if name not in self.header:
+            #     self.header.append(name)
 
             # self.table[items['cores']][name] = max(
             #     items['mflups'],
