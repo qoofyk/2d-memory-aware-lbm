@@ -74,3 +74,13 @@ sh submit_all.sh
 ```
 less seq_tile=16.txt | grep 'Mega' | cut -d ":" -f 2 | cut -d " " -f 2
 ```
+
+# Collect Data and generate graph
+make sure install python3 and matplotlib
+```
+module load python3
+pip install matplotlib
+
+cd /home/qoofyk/2d-memory-aware-lbm/examples/unsteady/experiments
+sh render_all_bridges.sh crop
+```

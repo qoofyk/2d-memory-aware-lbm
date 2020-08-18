@@ -35,6 +35,9 @@ scons/scons-3.1.1
 *.out
 *.app
 
+# Output
+*.csv
+
 *.html
 *.xml
 *.swp

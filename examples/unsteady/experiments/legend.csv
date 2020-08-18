@@ -1,0 +1,8 @@
+name,label,visible
+origin, Original, True
+fuse, Fuse, True
+fuse_tile, Fuse Tile, True
+2step, 2-Step, True
+2step_tile, 2-Step Tile, True
+3step, 3-Step, True
+3step_tile, 3-Step Tile, True
