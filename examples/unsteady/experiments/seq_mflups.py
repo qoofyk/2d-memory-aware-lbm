@@ -141,7 +141,7 @@ class Parser:
         # FIXME: This isn't actually the criteria we'd like to sort on,
         # we'd prefer to sort so that the list of names roughly parallels
         # the order of the bars in the graph.
-        self.header.sort()
+        # self.header.sort()
         self.header.insert(0, 'dims')
         # print(self.header)
 
