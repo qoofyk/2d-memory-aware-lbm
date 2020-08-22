@@ -10,7 +10,7 @@ Created on Sat Aug  8 19:30:57 2020
 # ./omp_square/omp_dim_14336_fuse_tile_omp_16.csv --xbase 10 --no-xticks --ylabel "Efficiency" --ylim "(0,32)" --no-ylog --y-percent --highlight-column "metg"
 
 import matplotlib
-# matplotlib.use('PDF')
+matplotlib.use('PDF')
 import matplotlib.pyplot as plt
 import argparse
 import ast
@@ -60,6 +60,8 @@ parser.add_argument('--no-xticks', action='store_false', dest='xticks')
 parser.add_argument('--connect-missing', action='store_true')
 parser.add_argument('--highlight-column')
 parser.add_argument('--ideal-column')
+parser.add_argument('--xticks-rotate', dest='xticks_rotate', type=int, default=0)
+parser.add_argument('--xlabel-size', dest='xlabel_size', type=float, default=12)
 args = parser.parse_args()
 
 markers = [
@@ -99,7 +101,7 @@ colors = [
 # matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["mathtext.fontset"] = "stixsans"
 
-matplotlib.rc('xtick', labelsize=12)
+matplotlib.rc('xtick', labelsize=args.xlabel_size)
 matplotlib.rc('ytick', labelsize=12)
 
 fig = plt.figure(figsize=(args.width, args.height))
@@ -234,7 +236,7 @@ if args.limit_intersection_system:
     plt.plot(float(row['limit_ideal_nodes']), float(row['limit_ideal_time']), color='black', marker='o', markerfacecolor='none', markersize=12, markeredgewidth=3)
 
 if args.xticks:
-    plt.xticks(nodes, nodes) #, rotation=30)
+    plt.xticks(nodes, nodes, rotation=args.xticks_rotate)
 if args.xlim:
     plt.xlim(*args.xlim)
 if args.ylim:
