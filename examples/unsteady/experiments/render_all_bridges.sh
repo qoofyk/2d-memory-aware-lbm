@@ -18,11 +18,23 @@ else
 fi
 
 python3 ${root_dir}/seq_mflups.py -m "bridges" > bridges_seq_square.csv
-python3 ${root_dir}/render_mflups.py ./bridges_seq_square.csv --xdata "dims" --xlabel "Length of a square grid"  --ylim "(0,35)" --no-ylog
-crop bridges_seq_square.pdf
+python3 ${root_dir}/render_mflups.py ./bridges_seq_square.csv --xdata "dims" --xlabel "Length of a square grid"  --ylim "(0,45)" --no-ylog
+${root_dir}/pdfcrop bridges_seq_square.pdf bridges_seq_square.pdf
 
-for DIM in 112 224 448 896 1792 3584 7168 14336; do
-  python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > omp_square_dim_${DIM}.csv
-  python3 ${root_dir}/render_mflups.py ./omp_square_dim_${DIM}.csv --ylim "(0,600)" --no-ylog
-  crop omp_square_dim_${DIM}.pdf
+for DIM in 112; do
+  python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > bridges_omp_square_dim_${DIM}.csv
+  python3 ${root_dir}/render_mflups.py ./bridges_omp_square_dim_${DIM}.csv --ylim "(0,500)" --no-xlog --no-ylog
+  ${root_dir}/pdfcrop bridges_omp_square_dim_${DIM}.pdf bridges_omp_square_dim_${DIM}.pdf
+done
+
+for DIM in 448; do
+  python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > bridges_omp_square_dim_${DIM}.csv
+  python3 ${root_dir}/render_mflups.py ./bridges_omp_square_dim_${DIM}.csv --ylim "(0,900)" --no-xlog --no-ylog
+  ${root_dir}/pdfcrop bridges_omp_square_dim_${DIM}.pdf bridges_omp_square_dim_${DIM}.pdf
+done
+
+for DIM in 224 896 1792 3584 7168 14336; do
+  python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > bridges_omp_square_dim_${DIM}.csv
+  python3 ${root_dir}/render_mflups.py ./bridges_omp_square_dim_${DIM}.csv --ylim "(0,800)" --no-xlog --no-ylog
+  ${root_dir}/pdfcrop bridges_omp_square_dim_${DIM}.pdf bridges_omp_square_dim_${DIM}.pdf
 done
