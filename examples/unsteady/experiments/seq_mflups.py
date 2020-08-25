@@ -84,7 +84,7 @@ class Parser:
         # Group by cores count and compute statistics:
         table['dims'], table['mflups'], table['std'], table['reps'], table['iterations'], table['warmup'], table['tile'] = list(map(
             numpy.asarray,
-            zip(*[(k, numpy.mean(mflups), numpy.std(mflups), len(mflups), iteration, warmup, self.tile)
+            zip(*[(k, numpy.mean(mflups), numpy.std(mflups), len(mflups), iteration[0], warmup[0], self.tile)
                   for k, vs in group_by(table['dims'], zip(table['mflups'], table['iterations'], table['warmup']))
                   for mflups, iteration, warmup in [zip(*vs)]])))
 
@@ -156,7 +156,7 @@ class Parser:
             row['dims'] = d #add a key-value pair
             out.writerow(row)
         
-        with open("seq_square_best_tile.csv", 'w') as f:
+        with open(self.machine + 'seq_square_best_tile.csv', 'w') as f:
             out = csv.DictWriter(f, self.header, dialect="excel")
             out.writeheader()
             for d in sorted(self.max_mflups_tile.keys()):

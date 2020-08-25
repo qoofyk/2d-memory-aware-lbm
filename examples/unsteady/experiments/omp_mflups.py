@@ -168,13 +168,15 @@ class Parser:
         
         # print(self.table.keys())
         for c in sorted(self.table.keys()):
+            if (c == 17):
+                continue
             row = self.table[c]
             # print(row)
             row = {k: None if v == float('-inf') else v for k, v in row.items()}
             row['cores'] = c #add a key-value pair
             out.writerow(row)
         
-        with open("omp_square_dim_" + str(self.dim) + "_best_tile.csv", 'w') as f:
+        with open(self.machine + "_omp_square_dim_" + str(self.dim) + "_best_tile.csv", 'w') as f:
             out = csv.DictWriter(f, self.header, dialect="excel")
             out.writeheader()
             for c in sorted(self.max_mflups_tile.keys()):
