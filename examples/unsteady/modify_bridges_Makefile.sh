@@ -6,31 +6,31 @@
 # Author: Yuankun Fu
 # email: qoofyk@gmail.com
 cd origin
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../fuse
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../fuse_tile
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../2step
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../2step_tile
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../3step
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 cd ../3step_tile
-patch -p1 < ../bridges.seq.Makefile.patch
+yes | cp -f ../bridges.seq.Makefile Makefile
 
 cd ../origin_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../fuse_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../fuse_tile_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../2step_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../2step_tile_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../3step_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile
 cd ../3step_tile_omp
-patch -p1 < ../bridges.omp.Makefile.patch
+yes | cp -f ../bridges.omp.Makefile Makefile

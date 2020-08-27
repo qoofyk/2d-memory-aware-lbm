@@ -19,6 +19,7 @@ void step3CollideStreamTile(Simulation* sim) {
           // 1st fused collision and streaming
           collideNode(&(sim->lattice[iX+iix][iY+iiy]));
 
+          #pragma ivdep
           for (iPop = 0; iPop < 9; ++iPop) {
             nextX = iX+iix + c[iPop][0];
             nextY = iY+iiy + c[iPop][1];
@@ -32,6 +33,7 @@ void step3CollideStreamTile(Simulation* sim) {
             // 2nd collision on line x-1, y-1
             collideNode(&(sim->tmpLattice[iX+iix-1][iY+iiy-1]));
 
+            #pragma ivdep
             for (iPop = 0; iPop < 9; ++iPop) {
               nextX = iX+iix-1 + c[iPop][0];
               nextY = iY+iiy-1 + c[iPop][1];
@@ -43,6 +45,7 @@ void step3CollideStreamTile(Simulation* sim) {
               // 3rd collision on line x-2, y-2
               collideNode(&(sim->lattice[iX+iix-2][iY+iiy-2]));
 
+              #pragma ivdep
               for (iPop = 0; iPop < 9; ++iPop) {
                 nextX = iX+iix-2 + c[iPop][0];
                 nextY = iY+iiy-2 + c[iPop][1];
@@ -331,6 +334,8 @@ void step3CollideStreamTileOMP(Simulation* sim) {
             if (innerY > 1){
               // 2nd fused c&s
               collideNode(&(sim->tmpLattice[innerX - 1][innerY - 1]));
+
+              #pragma ivdep
               for (iPop = 0; iPop < 9; ++iPop) {
                 nextX = innerX - 1 + c[iPop][0];
                 nextY = innerY - 1 + c[iPop][1];
@@ -341,6 +346,8 @@ void step3CollideStreamTileOMP(Simulation* sim) {
               if (innerY > 2){
                 // 3rd fused c&s
                 collideNode(&(sim->lattice[innerX - 2][innerY - 2]));
+
+                #pragma ivdep
                 for (iPop = 0; iPop < 9; ++iPop) {
                   nextX = innerX - 2 + c[iPop][0];
                   nextY = innerY - 2 + c[iPop][1];
@@ -358,6 +365,8 @@ void step3CollideStreamTileOMP(Simulation* sim) {
         for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
           // 1st fused c&s
           collideNode(&(sim->lattice[innerX][innerY]));
+
+          #pragma ivdep
           for (iPop = 0; iPop < 9; ++iPop) {
             nextX = innerX + c[iPop][0];
             nextY = innerY + c[iPop][1];
@@ -369,6 +378,8 @@ void step3CollideStreamTileOMP(Simulation* sim) {
           if (innerY > 1){
             // 2nd fused c&s
             collideNode(&(sim->tmpLattice[innerX - 1][innerY - 1]));
+
+            #pragma ivdep
             for (iPop = 0; iPop < 9; ++iPop) {
               nextX = innerX - 1 + c[iPop][0];
               nextY = innerY - 1 + c[iPop][1];
@@ -379,6 +390,8 @@ void step3CollideStreamTileOMP(Simulation* sim) {
             if (innerY > 2){
               // 3rd fused collision and streaming
               collideNode(&(sim->lattice[innerX - 2][innerY - 2]));
+
+              #pragma ivdep
               for (iPop = 0; iPop < 9; ++iPop) {
                 nextX = innerX - 2 + c[iPop][0];
                 nextY = innerY - 2 + c[iPop][1];
