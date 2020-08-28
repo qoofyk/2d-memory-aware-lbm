@@ -8,10 +8,12 @@
 
 rm -rf */*.dat
 
+# This is correct results
 cd origin
 ./unsteady 24 24 30 0 4
 cd ..
 
+# Now test and verify with different other code
 for CODE in fuse fuse_tile 2step 3step 2step_tile 3step_tile; do
   echo "run ${CODE}"
   cd ${CODE}
