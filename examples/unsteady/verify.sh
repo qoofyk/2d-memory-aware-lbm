@@ -10,9 +10,10 @@ rm -rf */*.dat
 
 Height=24
 Width=24
-Warm_up=30
+Warm_up=60
 Measure=0
 Tile=4
+Verify_timepoint=54
 
 # This is correct results
 cd origin
@@ -25,7 +26,7 @@ for CODE in fuse fuse_tile 2step 3step 2step_tile 3step_tile; do
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
   echo "verify ${CODE}"
-  diff ../origin/vel_origin_zgb_24.dat vel_${CODE}_zgb_24.dat
+  diff ../origin/vel_origin_zgb_${Verify_timepoint}.dat vel_${CODE}_zgb_${Verify_timepoint}.dat
   cd ..
   echo "---------------------------------------"
 done
@@ -39,7 +40,7 @@ for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
   echo "verify ${CODE}"
-  diff ../origin/vel_origin_zgb_24.dat vel_${CODE}_zgb_24.dat
+  diff ../origin/vel_origin_zgb_${Verify_timepoint}.dat vel_${CODE}_zgb_${Verify_timepoint}.dat
   cd ..
   echo "---------------------------------------"
 done
@@ -52,7 +53,7 @@ for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
   echo "verify ${CODE}"
-  diff ../origin/vel_origin_zgb_24.dat vel_${CODE}_zgb_24.dat
+  diff ../origin/vel_origin_zgb_${Verify_timepoint}.dat vel_${CODE}_zgb_${Verify_timepoint}.dat
   cd ..
   echo "---------------------------------------"
 done
@@ -65,7 +66,7 @@ for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
   echo "verify ${CODE}"
-  diff ../origin/vel_origin_zgb_24.dat vel_${CODE}_zgb_24.dat
+  diff ../origin/vel_origin_zgb_${Verify_timepoint}.dat vel_${CODE}_zgb_${Verify_timepoint}.dat
   cd ..
   echo "---------------------------------------"
 done
