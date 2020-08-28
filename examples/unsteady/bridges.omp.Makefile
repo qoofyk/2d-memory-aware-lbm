@@ -48,7 +48,7 @@ serialCXX    = icc
 # Compiler to use with MPI parallelism
 parallelCXX  = mpiicc
 # General compiler flags (e.g. -Wall to turn on all warnings on g++)
-compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -D_OPENMP -qopenmp -qopt-report5 -qopt-report-phase=vec -qopenmp-simd #-xCORE-AVX2 -fno-strict-aliasing
+compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -D_OPENMP -qopenmp -qopt-report5 -qopt-report-phase=vec -qopenmp-simd -xCORE-AVX2 #-fno-strict-aliasing -no-fma
 
 # General linker flags (don't put library includes into this flag)
 linkFlags    = -lm -qopenmp

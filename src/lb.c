@@ -9,8 +9,7 @@
 
   // initialize a node to default value
 void constructNode(Node* node) {
-    int iPop;
-    for (iPop=0; iPop<9; ++iPop) {
+    for (int iPop=0; iPop<9; ++iPop) {
         node->fPop[iPop] = 0.;
     }
     node->dynamics = 0;
@@ -18,9 +17,8 @@ void constructNode(Node* node) {
 
   // initialize a node to its local equilibrium term
 void iniEquilibrium(Node* node, double rho, double ux, double uy) {
-    int iPop;
     double uSqr = ux*ux + uy*uy;
-    for (iPop=0; iPop<9; ++iPop) {
+    for (int iPop=0; iPop<9; ++iPop) {
         node->fPop[iPop] =
             computeEquilibrium(iPop, rho, ux, uy, uSqr);
     }
@@ -112,8 +110,7 @@ void makePeriodic(Simulation* sim) {
     int ly = sim->ly;
     Node** lat = sim->lattice;
 
-    int iX, iY;
-    for (iX=1; iX<=lx; ++iX) {
+    for (int iX=1; iX<=lx; ++iX) {
         lat[iX][ly].fPop[4] = lat[iX][0].fPop[4];
         lat[iX][ly].fPop[7] = lat[iX][0].fPop[7];
         lat[iX][ly].fPop[8] = lat[iX][0].fPop[8];
@@ -123,7 +120,7 @@ void makePeriodic(Simulation* sim) {
         lat[iX][1].fPop[6] = lat[iX][ly+1].fPop[6];
     }
 
-    for (iY=1; iY<=ly; ++iY) {
+    for (int iY=1; iY<=ly; ++iY) {
         lat[1][iY].fPop[1] = lat[lx+1][iY].fPop[1];
         lat[1][iY].fPop[5] = lat[lx+1][iY].fPop[5];
         lat[1][iY].fPop[8] = lat[lx+1][iY].fPop[8];
@@ -142,11 +139,11 @@ void makePeriodic(Simulation* sim) {
   // save the velocity field (norm) to disk
 void saveVel(Simulation* sim, char fName[]) {
     FILE* oFile = fopen(fName, "w");
-    int iX, iY;
+
     double ux, uy, uNorm, rho;
     
-    for (iX=1; iX<=sim->lx; ++iX) {
-        for (iY=1; iY<=sim->ly; ++iY) {
+    for (int iX=1; iX<=sim->lx; ++iX) {
+        for (int iY=1; iY<=sim->ly; ++iY) {
            computeMacros(sim->lattice[iX][iY].fPop, &rho, &ux, &uy);
            uNorm = sqrt(ux*ux+uy*uy);
            fprintf(oFile, "%f ", uNorm);
@@ -159,10 +156,11 @@ void saveVel(Simulation* sim, char fName[]) {
   // save one lattice population to disk
 void saveF(Simulation* sim, int iPop, char fName[]) {
     FILE* oFile = fopen(fName, "w");
-    int iX, iY;
+
     double ux, uy, uNorm, rho;
-    for (iY=1; iY<=sim->ly; ++iY) {
-       for (iX=1; iX<=sim->lx; ++iX) {
+
+    for (int iY=1; iY<=sim->ly; ++iY) {
+       for (int iX=1; iX<=sim->lx; ++iX) {
            double f = sim->lattice[iX][iY].fPop[iPop];
            fprintf(oFile, "%f ", f);
        }
@@ -275,6 +273,7 @@ void propagateOMP(Simulation* sim) {
   #pragma omp for schedule(static, my_domain_H)
   for (int iX = 1; iX <= lx; ++iX)
     for (int iY = 1; iY <= ly; ++iY)
+      #pragma ivdep
       for (int iPop = 0; iPop < 9; ++iPop) {
         int nextX = iX + c[iPop][0];
         int nextY = iY + c[iPop][1];

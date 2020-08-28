@@ -24,7 +24,7 @@
 
 // #define ZGB
 
-// #define SAVE
+#define SAVE
 
 #ifdef _OPENMP
   #include <omp.h>

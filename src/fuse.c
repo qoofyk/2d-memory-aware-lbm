@@ -6,19 +6,17 @@
 #include "assert.h"
 
 void collideStream(Simulation* sim) {
-  int iX, iY, iPop;
-  int nextX, nextY;
-
   // #pragma ivdep
   // #pragma vector always
   // #pragma vector nontemporal
-  for (iX = 1; iX <= sim->lx; ++iX) {
-    for (iY = 1; iY <= sim->ly; ++iY) {
+  for (int iX = 1; iX <= sim->lx; ++iX) {
+    for (int iY = 1; iY <= sim->ly; ++iY) {
       collideNode(&(sim->lattice[iX][iY]));
       // streamming imediately once we got the updated f
-      for (iPop = 0; iPop < 9; ++iPop) {
-        nextX = iX + c[iPop][0];
-        nextY = iY + c[iPop][1];
+      #pragma ivdep
+      for (int iPop = 0; iPop < 9; ++iPop) {
+        int nextX = iX + c[iPop][0];
+        int nextY = iY + c[iPop][1];
         sim->tmpLattice[nextX][nextY].fPop[iPop] =
           sim->lattice[iX][iY].fPop[iPop];
       }
@@ -27,20 +25,18 @@ void collideStream(Simulation* sim) {
 }
 
 void collideStreamOMP(Simulation* sim) {
-  int iX, iY, iPop;
-  int nextX, nextY;
-
 #ifdef _OPENMP
 #pragma omp parallel default(shared)
 {
-  #pragma omp for private(iX, iY, iPop, nextX, nextY) schedule(static, my_domain_H)
-  for (iX = 1; iX <= sim->lx; ++iX) {
-    for (iY = 1; iY <= sim->ly; ++iY) {
+  #pragma omp for schedule(static, my_domain_H)
+  for (int iX = 1; iX <= sim->lx; ++iX) {
+    for (int iY = 1; iY <= sim->ly; ++iY) {
       collideNode(&(sim->lattice[iX][iY]));
       // streamming imediately once we got the updated f
-      for (iPop = 0; iPop < 9; ++iPop) {
-        nextX = iX + c[iPop][0];
-        nextY = iY + c[iPop][1];
+      #pragma ivdep
+      for (int iPop = 0; iPop < 9; ++iPop) {
+        int nextX = iX + c[iPop][0];
+        int nextY = iY + c[iPop][1];
         sim->tmpLattice[nextX][nextY].fPop[iPop] =
             sim->lattice[iX][iY].fPop[iPop];
       }

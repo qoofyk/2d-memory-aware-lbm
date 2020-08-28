@@ -8,12 +8,12 @@
 
 rm -rf */*.dat
 
-Height=24
-Width=24
-Warm_up=60
+Height=28
+Width=28
+Warm_up=120
 Measure=0
 Tile=4
-Verify_timepoint=54
+Verify_timepoint=114
 
 # This is correct results
 cd origin
@@ -36,6 +36,7 @@ echo "Verify with 1 thread"
 export OMP_PROC_BIND=spread
 export OMP_NUM_THREADS=1
 for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp 3step_tile_omp; do
+# for CODE in origin_omp; do
   echo "run ${CODE}"
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
@@ -49,6 +50,7 @@ echo "Verify with 2 thread"
 export OMP_PROC_BIND=spread
 export OMP_NUM_THREADS=2
 for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp 3step_tile_omp; do
+# for CODE in origin_omp; do
   echo "run ${CODE}"
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile
@@ -62,6 +64,7 @@ echo "Verify with 4 threads"
 export OMP_PROC_BIND=spread
 export OMP_NUM_THREADS=4
 for CODE in origin_omp fuse_omp fuse_tile_omp 2step_omp 3step_omp 2step_tile_omp 3step_tile_omp; do
+# for CODE in origin_omp; do
   echo "run ${CODE}"
   cd ${CODE}
   ./unsteady $Height $Width $Warm_up $Measure $Tile

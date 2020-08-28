@@ -8,10 +8,8 @@
 
 // immediately compute iX-1, iY-1
 void step2CollideStream(Simulation* sim) {
-  int iX, iY, iPop;
+  int iX, iY;
   int lx=sim->lx, ly=sim->ly;
-  double ux1, uy1, ux2, uy2;
-  int nextX, nextY;
 
   for (iX = 1; iX <= sim->lx; ++iX) {
     for (iY = 1; iY <= sim->ly; ++iY) {
@@ -23,9 +21,10 @@ void step2CollideStream(Simulation* sim) {
       // #pragma ivdep
       // #pragma vector always
       // #pragma vector nontemporal
-      for (iPop = 0; iPop < 9; ++iPop) {
-        nextX = iX + c[iPop][0];
-        nextY = iY + c[iPop][1];
+      #pragma ivdep
+      for (int iPop = 0; iPop < 9; ++iPop) {
+        int nextX = iX + c[iPop][0];
+        int nextY = iY + c[iPop][1];
         sim->tmpLattice[nextX][nextY].fPop[iPop] =
           sim->lattice[iX][iY].fPop[iPop];
       }
@@ -33,6 +32,7 @@ void step2CollideStream(Simulation* sim) {
       if (iX > 1 && iY > 1){
 
 #ifdef ZGB
+        double ux1, uy1, ux2, uy2;
         //save rho
         if (iX == (lx-1) ){
           //store rho from column iX=lx-2, iY=2~ly-1 need to be computed; iY=1, ly also computed but not used
@@ -50,12 +50,12 @@ void step2CollideStream(Simulation* sim) {
         // another branch for iX=sim->lx-1 and iY=sim-lx-2
 
         // step 4: second stream from  line y-1
-        // #pragma ivdep
         // #pragma vector always
         // #pragma vector nontemporal
-        for (iPop = 0; iPop < 9; ++iPop) {
-          nextX = iX-1 + c[iPop][0];
-          nextY = iY-1 + c[iPop][1];
+        #pragma ivdep
+        for (int iPop = 0; iPop < 9; ++iPop) {
+          int nextX = iX-1 + c[iPop][0];
+          int nextY = iY-1 + c[iPop][1];
           sim->lattice[nextX][nextY].fPop[iPop] =
             sim->tmpLattice[iX-1][iY-1].fPop[iPop];
         }
@@ -69,12 +69,12 @@ void step2CollideStream(Simulation* sim) {
   for (iX = 1; iX < sim->lx; ++iX){
     collideNode(&(sim->tmpLattice[iX][ly]));
 
-    // #pragma ivdep
     // #pragma vector always
-     // #pragma vector nontemporal
-    for (iPop = 0; iPop < 9; ++iPop) {
-      nextX = iX + c[iPop][0];
-      nextY = ly + c[iPop][1];
+    // #pragma vector nontemporal
+    #pragma ivdep
+    for (int iPop = 0; iPop < 9; ++iPop) {
+      int nextX = iX + c[iPop][0];
+      int nextY = ly + c[iPop][1];
       sim->lattice[nextX][nextY].fPop[iPop] =
         sim->tmpLattice[iX][ly].fPop[iPop];
     }
@@ -85,12 +85,13 @@ void step2CollideStream(Simulation* sim) {
   //simple optimize
   iY = 1;
   collideNode(&(sim->tmpLattice[lx][iY]));
-  // #pragma ivdep
+
   // #pragma vector always
   // #pragma vector nontemporal
-  for (iPop = 0; iPop < 9; ++iPop) {
-    nextX = lx + c[iPop][0];
-    nextY = iY + c[iPop][1];
+  #pragma ivdep
+  for (int iPop = 0; iPop < 9; ++iPop) {
+    int nextX = lx + c[iPop][0];
+    int nextY = iY + c[iPop][1];
     sim->lattice[nextX][nextY].fPop[iPop] =
         sim->tmpLattice[lx][iY].fPop[iPop];
   }
@@ -104,12 +105,12 @@ void step2CollideStream(Simulation* sim) {
 #endif
     collideNode(&(sim->tmpLattice[lx][iY]));
 
-    // #pragma ivdep
     // #pragma vector always
     // #pragma vector nontemporal
-    for (iPop = 0; iPop < 9; ++iPop) {
-      nextX = lx + c[iPop][0];
-      nextY = iY + c[iPop][1];
+    #pragma ivdep
+    for (int iPop = 0; iPop < 9; ++iPop) {
+      int nextX = lx + c[iPop][0];
+      int nextY = iY + c[iPop][1];
       sim->lattice[nextX][nextY].fPop[iPop] =
         sim->tmpLattice[lx][iY].fPop[iPop];
     }
@@ -118,12 +119,12 @@ void step2CollideStream(Simulation* sim) {
   // compute lx, ly point
   collideNode(&(sim->tmpLattice[lx][ly]));
 
-  // #pragma ivdep
   // #pragma vector always
   // #pragma vector nontemporal
-  for (iPop=0; iPop<9; ++iPop) {
-    nextX = lx + c[iPop][0];
-    nextY = ly + c[iPop][1];
+  #pragma ivdep
+  for (int iPop=0; iPop<9; ++iPop) {
+    int nextX = lx + c[iPop][0];
+    int nextY = ly + c[iPop][1];
     sim->lattice[nextX][nextY].fPop[iPop] =
         sim->tmpLattice[lx][ly].fPop[iPop];
   }
@@ -224,7 +225,7 @@ void step2CollideStream2(Simulation* sim) {
 
 // explicit, no use inline
 void step2CollideStreamOMP(Simulation* sim) {
-  unsigned int iX, iY, iPop;
+  int iX, iY, iPop;
   int lx=sim->lx, ly=sim->ly;
   double ux1, uy1, ux2, uy2;
   int nextX, nextY;
@@ -252,9 +253,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
       collideNode(&(sim->lattice[iX][iY]));
 
-      // #pragma ivdep
       // #pragma vector always
       // #pragma vector nontemporal
+      #pragma ivdep
       for (iPop = 0; iPop < 9; ++iPop) {
         nextX = iX + c[iPop][0];
         nextY = iY + c[iPop][1];
@@ -285,9 +286,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
         collideNode(&(sim->lattice[iX][iY]));
 
-        // #pragma ivdep
         // #pragma vector always
         // #pragma vector nontemporal
+        #pragma ivdep
         for (iPop = 0; iPop < 9; ++iPop) {
           nextX = iX + c[iPop][0];
           nextY = iY + c[iPop][1];
@@ -324,9 +325,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
           collideNode(&(sim->tmpLattice[iX-1][iY-1]));
 
-          // #pragma ivdep
           // #pragma vector always
           // #pragma vector nontemporal
+          #pragma ivdep
           for (iPop = 0; iPop < 9; ++iPop) {
             nextX = iX-1 + c[iPop][0];
             nextY = iY-1 + c[iPop][1];
@@ -357,9 +358,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
       collideNode(&(sim->tmpLattice[iX][iY]));
 
-      // #pragma ivdep
       // #pragma vector always
       // #pragma vector nontemporal
+      #pragma ivdep
       for (iPop = 0; iPop < 9; ++iPop) {
         nextX = iX + c[iPop][0];
         nextY = iY + c[iPop][1];
@@ -379,9 +380,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
     collideNode(&(sim->tmpLattice[iX][iY]));
 
-    // #pragma ivdep
     // #pragma vector always
     // #pragma vector nontemporal
+    #pragma ivdep
     for (iPop = 0; iPop < 9; ++iPop) {
       nextX = iX + c[iPop][0];
       nextY = iY + c[iPop][1];
@@ -411,9 +412,9 @@ void step2CollideStreamOMP(Simulation* sim) {
 
     collideNode(&(sim->tmpLattice[iX][iY]));
 
-    // #pragma ivdep
     // #pragma vector always
     // #pragma vector nontemporal
+    #pragma ivdep
     for (iPop = 0; iPop < 9; ++iPop) {
       nextX = iX + c[iPop][0];
       nextY = iY + c[iPop][1];

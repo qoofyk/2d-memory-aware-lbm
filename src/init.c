@@ -15,7 +15,7 @@ void setConstants(int argc, char *argv[]) {
   numIter   = atoi(argv[4]);     // total number of iterations
   tile      = atoi(argv[5]);
 
-  obst_r = 8;   // radius of the cylinder // test performance
+  obst_r = 1;   // radius of the cylinder // test performance
   // obst_r = ly/10+1;   // radius of the cylinder // for visualization
   obst_x = lx/4;      // position of the cylinder; the cylinder is
   obst_y = ly/2;      // offset from the center to break symmetry

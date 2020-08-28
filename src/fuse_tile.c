@@ -45,6 +45,7 @@ void collideStreamTile(Simulation* sim) {
           collideNode(&(sim->lattice[iX+iix][iY+iiy]));
 
           // step 2: stream from line x-1 to x
+          #pragma ivdep
           for (int iPop = 0; iPop < 9; ++iPop) {
             int nextX = iX+iix + c[iPop][0];
             int nextY = iY+iiy + c[iPop][1];
@@ -64,8 +65,7 @@ void collideStreamTileOMP(Simulation* sim) {
 #ifdef _OPENMP
 #pragma omp parallel default(shared)
 {
-  int iX, iY, iPop, iix, iiy;
-  int nextX, nextY;
+  int iX, iY, iix, iiy;
 
   int tid = omp_get_thread_num();
   int my_lx[2];
@@ -82,9 +82,11 @@ void collideStreamTileOMP(Simulation* sim) {
         for (int innerY = outerY; innerY <= innerY_max; ++innerY) {
           // fused collision and streaming
           collideNode(&(sim->lattice[innerX][innerY]));
-          for (iPop = 0; iPop < 9; ++iPop) {
-            nextX = innerX + c[iPop][0];
-            nextY = innerY + c[iPop][1];
+
+          #pragma ivdep
+          for (int iPop = 0; iPop < 9; ++iPop) {
+            int nextX = innerX + c[iPop][0];
+            int nextY = innerY + c[iPop][1];
 
             sim->tmpLattice[nextX][nextY].fPop[iPop] =
               sim->lattice[innerX][innerY].fPop[iPop];
