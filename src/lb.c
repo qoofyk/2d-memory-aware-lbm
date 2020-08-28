@@ -202,8 +202,11 @@ void bgk(double* fPop, void* selfData) {
     computeMacros(fPop, &rho, &ux, &uy);
     double uSqr = ux*ux+uy*uy;
     
-    #pragma ivdep
-    for(int iPop=0; iPop<9; ++iPop) {
+    // #pragma vector always
+    // #pragma ivdep
+
+    // #pragma omp simd
+    for(int iPop = 0; iPop < 9; ++iPop) {
         fPop[iPop] *= (1. - omega);
         fPop[iPop] += omega * computeEquilibrium (
                                   iPop, rho, ux, uy, uSqr );

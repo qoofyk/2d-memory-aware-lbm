@@ -14,8 +14,6 @@
 #include "eval_tools.h"
 #include "ittnotify.h"
 
-// #define SAVE
-
   // These constants define the flow geometry and are commented in
   //   the function setConstants()
 int lx, ly;
@@ -65,7 +63,7 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "step3-tile");
+    sprintf(case_name, "3step_tile");
     collision_func=&step3CollideStreamTile;
     stream_func = swapLattice;
 

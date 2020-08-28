@@ -14,8 +14,6 @@
 #include "eval_tools.h"
 #include "ittnotify.h"
 
-// #define SAVE
-
   // These constants define the flow geometry and are commented in
   //   the function setConstants()
 int lx, ly;

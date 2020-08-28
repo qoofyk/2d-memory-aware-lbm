@@ -39,16 +39,16 @@ srcPaths =
 # Path to external libraries (other than Palabos)
 libraryPaths =
 # Path to external libraries (other than Palabos)
-includePaths = -I/opt/intel/vtune_amplifier_2018.4.0.574913/include
+includePaths = -I/opt/intel/vtune_amplifier_2019.6.0.602217/include
 # Dynamic and static libraries (other than Palabos)
-libraries    = /opt/intel/vtune_amplifier_2018.4.0.574913/lib64/libittnotify.a
+libraries    = /opt/intel/vtune_amplifier_2019.6.0.602217/lib64/libittnotify.a
 
 # Compiler to use without MPI parallelism
 serialCXX    = icc
 # Compiler to use with MPI parallelism
 parallelCXX  = mpiicc
 # General compiler flags (e.g. -Wall to turn on all warnings on g++)
-compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -D_OPENMP -qopenmp ${TACC_VEC_FLAGS}
+compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -D_OPENMP -qopenmp -qopt-report5 -qopt-report-phase=vec -qopenmp-simd #-xCORE-AVX2
 
 # General linker flags (don't put library includes into this flag)
 linkFlags    = -lm -qopenmp
@@ -56,7 +56,7 @@ linkFlags    = -lm -qopenmp
 optimFlags   = -O3
 #optimFlags   = -xHOST -O3 -ip -no-prec-div -static
 # Compiler flags to use when debug mode is on
-debugFlags   = -g -gdwarf-2 -parallel-source-info=2 -debug inline-debug-info #-vec-report3 -qopt-report -qopt-report-phase=vec
+debugFlags   = -g -gdwarf-2 -parallel-source-info=2 -debug inline-debug-info
 # Compiler flags to use when profile mode is on
 profileFlags = -pg
 

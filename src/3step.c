@@ -190,7 +190,7 @@ void step3CollideStream(Simulation* sim) {
 #if 1
 // immediately compute (iX-1, iY-1), then (iX-2, iY-2) & unrolling
 void step3CollideStream(Simulation* sim) {
-  unsigned int iX, iY, iPop;
+  int iX, iY, iPop;
   int lx = sim->lx, ly = sim->ly;
   double ux1, uy1, ux2, uy2;
   int nextX, nextY;
@@ -331,22 +331,6 @@ void step3CollideStream(Simulation* sim) {
         sim->tmpLattice[iX-1][iY].fPop[iPop];
     }
 
-    collideNode(&(sim->tmpLattice[iX-2][iY-1]));
-    for (iPop = 0; iPop < 9; ++iPop) {
-      nextX = iX-2 + c[iPop][0];
-      nextY = iY-1 + c[iPop][1];
-      sim->lattice[nextX][nextY].fPop[iPop] =
-        sim->tmpLattice[iX-2][iY-1].fPop[iPop];
-    }
-
-    collideNode(&(sim->tmpLattice[iX-2][iY]));
-    for (iPop = 0; iPop < 9; ++iPop) {
-      nextX = iX-2 + c[iPop][0];
-      nextY = iY + c[iPop][1];
-      sim->lattice[nextX][nextY].fPop[iPop] =
-        sim->tmpLattice[iX-2][iY].fPop[iPop];
-    }
-
     // 3rd fused collision and streaming
     collideNode(&(sim->lattice[iX-2][iY-1]));
     for (iPop = 0; iPop < 9; ++iPop) {
@@ -369,31 +353,33 @@ void step3CollideStream(Simulation* sim) {
   }// end of iX loop
 
   /* ------ line iX = [lx-1, lx] -----*/
-  // 2nd fused collision and streaming
-  for (iX = lx - 1; iX <= lx; ++iX) {
-    for (iY = 1; iY <= ly; ++iY) {
-      collideNode(&(sim->tmpLattice[iX][iY]));
-      for (iPop = 0; iPop < 9; ++iPop) {
-        nextX = iX + c[iPop][0];
-        nextY = iY + c[iPop][1];
-        sim->lattice[nextX][nextY].fPop[iPop] =
-          sim->tmpLattice[iX][iY].fPop[iPop];
-      }
-    } // end of iY loop
-  }
-
-  // 3rd fused collision and streaming
+  // 2nd fused collision and streaming on iX = lx
   iX = lx;
   for (iY = 1; iY <= ly; ++iY) {
-    collideNode(&(sim->lattice[iX][iY]));
+    collideNode(&(sim->tmpLattice[iX][iY]));
     for (iPop = 0; iPop < 9; ++iPop) {
       nextX = iX + c[iPop][0];
       nextY = iY + c[iPop][1];
-
-      sim->tmpLattice[nextX][nextY].fPop[iPop] =
-        sim->lattice[iX][iY].fPop[iPop];
+      sim->lattice[nextX][nextY].fPop[iPop] =
+        sim->tmpLattice[iX][iY].fPop[iPop];
     }
   } // end of iY loop
+  
+
+  // 3rd fused collision and streaming on iX = lx - 1 & lx
+  for (iX = lx - 1; iX <= lx; ++iX) {
+    for (iY = 1; iY <= ly; ++iY) {
+      collideNode(&(sim->lattice[iX][iY]));
+      for (iPop = 0; iPop < 9; ++iPop) {
+        nextX = iX + c[iPop][0];
+        nextY = iY + c[iPop][1];
+
+        sim->tmpLattice[nextX][nextY].fPop[iPop] =
+          sim->lattice[iX][iY].fPop[iPop];
+      }
+    } // end of iY loop
+  }
+  
 
 }// end of func
 #endif

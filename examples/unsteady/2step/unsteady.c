@@ -14,8 +14,6 @@
 #include "eval_tools.h"
 #include "ittnotify.h"
 
-// #define SAVE
-
   // These constants define the flow geometry and are commented in
   //   the function setConstants()
 int lx, ly;
@@ -65,7 +63,7 @@ int main(int argc, char *argv[]) {
     void (*collision_func)(Simulation *) = NULL;
     void (*stream_func)(Simulation *) = NULL;
     
-    sprintf(case_name, "step2-line");
+    sprintf(case_name, "2step");
     collision_func=&step2CollideStream;
     stream_func = NULL;
 

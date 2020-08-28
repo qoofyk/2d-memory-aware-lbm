@@ -48,15 +48,15 @@ serialCXX    = icc
 # Compiler to use with MPI parallelism
 parallelCXX  = mpiicc
 # General compiler flags (e.g. -Wall to turn on all warnings on g++)
-compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -xCORE-AVX2 -qopt-report5 -qopt-report-phase=vec 
+compileFlags = -Wall -Wextra -Wnon-virtual-dtor -Wno-deprecated-declarations -DPLB_MAC_OS_X -std=gnu99 -qopt-report5 -qopt-report-phase=vec -qopenmp-simd #-xCORE-AVX2
 
 # General linker flags (don't put library includes into this flag)
-linkFlags    = -lm -xCORE-AVX2
+linkFlags    = -lm
 # Compiler flags to use when optimization mode is on
 optimFlags   = -O3
 #optimFlags   = -xHOST -O3 -ip -no-prec-div -static
 # Compiler flags to use when debug mode is on
-debugFlags   = -g -gdwarf-2 -parallel-source-info=2 -debug inline-debug-info #-vec-report3 
+debugFlags   = -g -gdwarf-2 -parallel-source-info=2 -debug inline-debug-info
 # Compiler flags to use when profile mode is on
 profileFlags = -pg
 

@@ -55,16 +55,16 @@ elif [ $DIM == 1792 ]; then
   steps=(600 600 600 600 600 600 600)
 
 elif [ $DIM == 3584 ]; then
-  warmup_steps=(48 48 96 96 192 192 192)
-  steps=(96 96 192 192 384 384 384)
+  warmup_steps=(48 48 96 96 768 768 768)
+  steps=(96 96 192 192 600 600 600)
 
 elif [ $DIM == 7168 ]; then
-  warmup_steps=(24 24 48 48 96 96 96)
-  steps=(48 48 96 96 192 192 192)
+  warmup_steps=(24 24 48 48 768 768 768)
+  steps=(48 48 96 96 600 600 600)
 
 elif [ $DIM == 14336 ]; then
-  warmup_steps=(6 6 12 24 24 24 48)
-  steps=(6 6 12 48 48 48 96)
+  warmup_steps=(6 6 12 24 768 768 768)
+  steps=(6 6 12 48 600 600 600)
 
 else
   echo "Wrong parameters"
