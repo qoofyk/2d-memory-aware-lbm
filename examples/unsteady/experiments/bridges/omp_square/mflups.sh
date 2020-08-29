@@ -19,17 +19,22 @@ omp_square () {
   # Start Simulation
   Height=$DIM
   Width=$DIM
-    # for ((k=0; k<${#threads[@]}; k++)); do
-    for ((k=${#threads[@]}-1; k>=0; k--)); do
-      export OMP_NUM_THREADS=${threads[k]}
 
-      for repeat in 0 1 2 3 4; do
-        echo "spread $mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}"
-        $mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}
-        echo "---------------------------------------------------------------------"
-      echo
-      done
+  if [[ $Height < ${TILE:-1} ]]; then
+    return 1
+  fi
+
+  # for ((k=0; k<${#threads[@]}; k++)); do
+  for ((k=${#threads[@]}-1; k>=0; k--)); do
+    export OMP_NUM_THREADS=${threads[k]}
+
+    for repeat in 0 1 2 3 4; do
+      echo "spread $mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}"
+      $mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}
+      echo "---------------------------------------------------------------------"
+    echo
     done
+  done
 }
 
 threads=(1 2 4 8 14 16 28)

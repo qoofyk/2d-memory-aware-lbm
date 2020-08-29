@@ -18,10 +18,14 @@ seq_square () {
   # Start Simulation
   for ((k=0; k<${#dim[@]}; k++)); do
   # for ((k=${#dim[@]}-1; k>=0; k--)); do
-    for repeat in 0 1 2 3 4; do
-      Height=$(( 1 << dim[k] ))
-      Width=$(( 1 << dim[k] ))
+  Height=$(( 1 << dim[k] ))
+  Width=$(( 1 << dim[k] ))
+  
+  if [[ $Height < ${TILE:-1} ]]
+    break
+  fi
 
+    for repeat in 0 1 2 3 4; do
       echo "$mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}"
       $mybin $Height $Width ${warmup_steps[k]} ${steps[k]} ${TILE:-1}
       echo "---------------------------------------------------------------------"
