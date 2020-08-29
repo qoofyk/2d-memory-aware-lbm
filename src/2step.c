@@ -9,10 +9,10 @@
 // immediately compute iX-1, iY-1
 void step2CollideStream(Simulation* sim) {
   int iX, iY;
-  int lx=sim->lx, ly=sim->ly;
+  int lx = sim->lx, ly = sim->ly;
 
-  for (iX = 1; iX <= sim->lx; ++iX) {
-    for (iY = 1; iY <= sim->ly; ++iY) {
+  for (iX = 1; iX <= lx; ++iX) {
+    for (iY = 1; iY <= ly; ++iY) {
 
       // step1: collision on this line y
       collideNode(&(sim->lattice[iX][iY]));
@@ -66,7 +66,7 @@ void step2CollideStream(Simulation* sim) {
   // Line iX=1~lx-1, y=ly need to compute one more time
   // iY=sim->ly;
 
-  for (iX = 1; iX < sim->lx; ++iX){
+  for (iX = 1; iX < lx; ++iX){
     collideNode(&(sim->tmpLattice[iX][ly]));
 
     // #pragma vector always
@@ -96,7 +96,7 @@ void step2CollideStream(Simulation* sim) {
         sim->tmpLattice[lx][iY].fPop[iPop];
   }
 
-  for (iY = 2; iY < sim->ly; ++iY){
+  for (iY = 2; iY < ly; ++iY){
 
 #ifdef ZGB
     // Compute a second order extrapolation on the right boundary
@@ -134,18 +134,18 @@ void step2CollideStream(Simulation* sim) {
 //go through whole line, then compute lower line
 void step2CollideStream2(Simulation* sim) {
   int iX, iY, iPop;
-  int lx=sim->lx, ly=sim->ly;
+  int lx = sim->lx, ly = sim->ly;
   double ux1, uy1, ux2, uy2;
   int nextX, nextY;
 
-  for (iX = 1; iX <= sim->lx; ++iX) {
+  for (iX = 1; iX <= lx; ++iX) {
 
 #ifdef _OPENMP
 #pragma omp parallel for default(shared) \
     private(iY, iPop, nextX, nextY) \
     schedule(static, my_domain_H)
 #endif
-    for (iY = 1; iY <= sim->ly; ++iY) {
+    for (iY = 1; iY <= ly; ++iY) {
         collide_stream_buf1_to_buf2(sim, iX, iY);
     }// end of iY loop
 
@@ -154,7 +154,7 @@ void step2CollideStream2(Simulation* sim) {
     private(iY, iPop, nextX, nextY) \
     schedule(static, my_domain_H)
 #endif
-    for (iY = 1; iY <= sim->ly; ++iY){
+    for (iY = 1; iY <= ly; ++iY){
       if (iX > 1 && iY > 1){
 
 #ifdef ZGB
@@ -181,7 +181,7 @@ void step2CollideStream2(Simulation* sim) {
     private(iX, iPop, nextX, nextY) \
     schedule(static, my_domain_H)
 #endif
-  for (iX = 1; iX < sim->lx; ++iX){
+  for (iX = 1; iX < lx; ++iX){
     // 2nd collision and streaming
     collide_stream_buf2_to_buf1(sim, iX, iY);
   }
@@ -202,7 +202,7 @@ void step2CollideStream2(Simulation* sim) {
   private(iY, iPop, nextX, nextY) \
   schedule(static, my_domain_H)
 #endif
-  for (iY = 2; iY < sim->ly; ++iY){
+  for (iY = 2; iY < ly; ++iY){
 
 #ifdef ZGB
     //Compute a second order extrapolation on the right boundary
@@ -225,7 +225,7 @@ void step2CollideStream2(Simulation* sim) {
 
 // explicit, no use inline
 void step2CollideStreamOMP(Simulation* sim) {
-  int lx=sim->lx, ly=sim->ly;
+  int lx = sim->lx, ly = sim->ly;
   //compute each thread upper boundary line at iX=my_domain_H 1st c+s
 
 #ifdef _OPENMP

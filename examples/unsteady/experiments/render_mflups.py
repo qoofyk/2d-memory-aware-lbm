@@ -88,13 +88,17 @@ markers = [
 colors = [
     # Built in colors
     'gold', # no use
-    'tab:blue',
-    'tab:red',
-    'tab:brown',
-    'tab:green',
-    'mediumorchid',
-    'orangered',
-    'navy',
+    (126 / 255.0, 0 / 255.0, 33 / 255.0), #'tab:red', # origin
+    'orangered', # (255 / 255.0, 66 / 255.0, 14 / 255.0), # fuse_tile = google orange
+    'C1', # fuse_tile = google yellow (255 / 255.0, 211 / 255.0, 32 / 255.0),
+    'tab:green', # 2step
+    'mediumorchid', #(49 / 255.0, 64 / 255.0, 4 / 255.0), # 2step_tile = google dark green
+    'tab:blue', # 3step = google blue (0 / 255.0, 69 / 255.0, 134 / 255.0) / 'C0' / 
+    'navy', #3step_tile
+    
+    # 'tab:brown',
+    # 'mediumorchid',
+    # 'orangered',
 ] * 10
 
 # matplotlib.rcParams["font.family"] = "STIXGeneral"
