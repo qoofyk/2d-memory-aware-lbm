@@ -15,10 +15,10 @@ void setConstants(int argc, char *argv[]) {
   numIter   = atoi(argv[4]);     // total number of iterations
   tile      = atoi(argv[5]);
 
-  if (lx < tile || ly < tile) {
-    printf("Wrong parameters. lx < tile || ly < tile\n"); 
-    exit(1);
-  }
+  // if (lx < tile || ly < tile) {
+  //   printf("Wrong parameters. lx < tile || ly < tile\n"); 
+  //   exit(1);
+  // }
 
   obst_r = 1;   // radius of the cylinder // test performance
   // obst_r = ly/10+1;   // radius of the cylinder // for visualization
