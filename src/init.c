@@ -16,7 +16,7 @@ void setConstants(int argc, char *argv[]) {
   tile      = atoi(argv[5]);
 
   if (lx < tile || ly < tile) {
-    printf("%s: Wrong parameters. lx < tile || ly < tile\n"); 
+    printf("Wrong parameters. lx < tile || ly < tile\n"); 
     exit(1);
   }
 
