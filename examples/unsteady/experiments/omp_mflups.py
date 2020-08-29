@@ -176,7 +176,7 @@ class Parser:
             row['cores'] = c #add a key-value pair
             out.writerow(row)
         
-        with open(self.machine + "_omp_square_dim_" + str(self.dim) + "_best_tile.csv", 'w') as f:
+        with open('best_tile_omp_square_dim_' + str(self.dim) + '_' + self.machine + '.csv', 'w') as f:
             out = csv.DictWriter(f, self.header, dialect="excel")
             out.writeheader()
             for c in sorted(self.max_mflups_tile.keys()):

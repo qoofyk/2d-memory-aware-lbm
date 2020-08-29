@@ -23,7 +23,7 @@ ${root_dir}/pdfcrop bridges_seq_square.pdf bridges_seq_square.pdf
 
 for DIM in 112; do
   python3 ${root_dir}/omp_mflups.py -m "bridges" -d ${DIM} > bridges_omp_square_dim_${DIM}.csv
-  python3 ${root_dir}/render_mflups.py ./bridges_omp_square_dim_${DIM}.csv --ylim "(0,500)" --no-xlog --no-ylog
+  python3 ${root_dir}/render_mflups.py ./bridges_omp_square_dim_${DIM}.csv --ylim "(0,600)" --no-xlog --no-ylog
   ${root_dir}/pdfcrop bridges_omp_square_dim_${DIM}.pdf bridges_omp_square_dim_${DIM}.pdf
 done
 

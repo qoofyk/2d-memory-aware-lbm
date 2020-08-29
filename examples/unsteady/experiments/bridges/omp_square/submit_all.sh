@@ -7,16 +7,16 @@
 # email: qoofyk@gmail.com
 
 # 112 224 448 896 1792 3584 7168 14336
-# for d in 7168; do
-#   DIM=$d CODE=origin_omp bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
-#   DIM=$d CODE=fuse_omp   bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
-#   DIM=$d CODE=2step_omp  bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
-#   DIM=$d CODE=3step_omp  bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
-# done
+for d in 112 224 448 896 1792 3584 7168 14336; do
+  DIM=$d CODE=origin_omp bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
+  DIM=$d CODE=fuse_omp   bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
+  DIM=$d CODE=2step_omp  bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
+  DIM=$d CODE=3step_omp  bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
+done
 
-# 8 16 32 64 128 256
-for t in 32 64 128 256; do
-  for d in 3584 7168 14336; do
+# 8 16 32 64 128 256 512
+for t in 512; do
+  for d in 112 224 448 896 1792 3584 7168 14336; do
     DIM=$d CODE=fuse_tile_omp  TILE=$t bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
     DIM=$d CODE=2step_tile_omp TILE=$t bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'
     DIM=$d CODE=3step_tile_omp TILE=$t bash -c 'sbatch --nodes=1 --job-name="omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" --output="jobtime/omp-square-dim-${DIM}-${CODE}${TILE:+_}${TILE}" mflups.sh'

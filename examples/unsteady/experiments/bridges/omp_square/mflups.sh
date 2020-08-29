@@ -35,15 +35,15 @@ omp_square () {
 threads=(1 2 4 8 14 16 28)
 
 if [ $DIM == 112 ]; then
-  warmup_steps=(600 600 600 600 600 600 600)
+  warmup_steps=(900 900 900 900 900 900 900)
   steps=(600 600 600 600 600 600 600)
 
 elif [ $DIM == 224 ]; then
-  warmup_steps=(600 600 600 600 600 600 600)
+  warmup_steps=(900 900 900 900 900 900 900)
   steps=(600 600 600 600 600 600 600)
 
 elif [ $DIM == 448 ]; then
-  warmup_steps=(600 600 600 600 600 600 600)
+  warmup_steps=(900 900 900 900 900 900 900)
   steps=(600 600 600 600 600 600 600)
 
 elif [ $DIM == 896 ]; then
@@ -55,16 +55,34 @@ elif [ $DIM == 1792 ]; then
   steps=(600 600 600 600 600 600 600)
 
 elif [ $DIM == 3584 ]; then
-  warmup_steps=(48 48 96 96 768 768 768)
-  steps=(96 96 192 192 600 600 600)
+  warmup_steps=(48 48 96 96 192 192 192)
+  steps=(96 96 192 192 384 384 384)
+
+  if [[ ${CODE} == *"_tile"* ]]; then
+    echo "contains _tile"
+    warmup_steps=(48 48 96 96 768 768 768)
+    steps=(96 96 192 192 600 600 600)
+  fi
 
 elif [ $DIM == 7168 ]; then
-  warmup_steps=(24 24 48 48 768 768 768)
-  steps=(48 48 96 96 600 600 600)
+  warmup_steps=(24 24 48 48 96 96 96)
+  steps=(48 48 96 96 192 192 192)
+
+  if [[ ${CODE} == *"_tile"* ]]; then
+    echo "contains _tile"
+    warmup_steps=(24 24 48 48 768 768 768)
+    steps=(48 48 96 96 600 600 600)
+  fi
 
 elif [ $DIM == 14336 ]; then
-  warmup_steps=(6 6 12 24 768 768 768)
-  steps=(6 6 12 48 600 600 600)
+  warmup_steps=(6 6 12 24 48 48 48)
+  steps=(6 6 12 48 96 96 96)
+
+  if [[ ${CODE} == *"_tile"* ]]; then
+    echo "contains _tile"
+    warmup_steps=(6 6 12 24 768 768 768)
+    steps=(6 6 12 48 600 600 600)
+  fi
 
 else
   echo "Wrong parameters"
