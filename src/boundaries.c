@@ -198,6 +198,7 @@ inline static void splitEqNeq (
         double* f, double* fEq, double* fNeq,
         double rho, double ux, double uy)
 {
+    #pragma ivdep
     for (int iPop=0; iPop<9; ++iPop) {
         fEq[iPop]
             = computeEquilibrium(iPop, rho, ux, uy, ux*ux+uy*uy);
@@ -209,6 +210,7 @@ inline static void regularizedF (
         double* f, double* fEq,
         double neqPixx, double neqPiyy, double neqPixy )
 {
+    #pragma ivdep
     for (int iPop=0; iPop<9; ++iPop) {
         f[iPop] = fEq[iPop] + 9./2. * t[iPop] *
             ( (c[iPop][0]*c[iPop][0]-1./3.)*neqPixx +
