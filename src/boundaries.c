@@ -8,9 +8,12 @@
 void bounceBack(double* fPop, void* selfData) {
     static double fTmp[9];
 
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         fTmp[iPop] = fPop[oppositeOf[iPop]];
     }
+
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         fPop[iPop] = fTmp[iPop];
     }
@@ -198,7 +201,7 @@ inline static void splitEqNeq (
         double* f, double* fEq, double* fNeq,
         double rho, double ux, double uy)
 {
-    #pragma ivdep
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         fEq[iPop]
             = computeEquilibrium(iPop, rho, ux, uy, ux*ux+uy*uy);
@@ -210,7 +213,7 @@ inline static void regularizedF (
         double* f, double* fEq,
         double neqPixx, double neqPiyy, double neqPixy )
 {
-    #pragma ivdep
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         f[iPop] = fEq[iPop] + 9./2. * t[iPop] *
             ( (c[iPop][0]*c[iPop][0]-1./3.)*neqPixx +

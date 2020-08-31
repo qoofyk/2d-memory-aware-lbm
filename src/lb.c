@@ -9,6 +9,7 @@
 
   // initialize a node to default value
 void constructNode(Node* node) {
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         node->fPop[iPop] = 0.;
     }
@@ -18,6 +19,8 @@ void constructNode(Node* node) {
   // initialize a node to its local equilibrium term
 void iniEquilibrium(Node* node, double rho, double ux, double uy) {
     double uSqr = ux*ux + uy*uy;
+
+    #pragma omp simd
     for (int iPop=0; iPop<9; ++iPop) {
         node->fPop[iPop] =
             computeEquilibrium(iPop, rho, ux, uy, uSqr);
