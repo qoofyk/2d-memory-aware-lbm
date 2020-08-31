@@ -89,6 +89,7 @@ void propagate(Simulation* sim) {
     int ly = sim->ly;
     for (int iX=1; iX<=lx; ++iX) {
         for (int iY=1; iY<=ly; ++iY) {
+            #pragma ivdep
             for (int iPop=0; iPop<9; ++iPop) {
                 int nextX = iX + c[iPop][0];
                 int nextY = iY + c[iPop][1];
@@ -203,7 +204,7 @@ void bgk(double* fPop, void* selfData) {
     // #pragma vector always
     // #pragma ivdep
 
-    // #pragma omp simd
+    #pragma omp simd
     for(int iPop = 0; iPop < 9; ++iPop) {
         fPop[iPop] *= (1. - omega);
         fPop[iPop] += omega * computeEquilibrium (
