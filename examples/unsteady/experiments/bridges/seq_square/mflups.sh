@@ -2,8 +2,7 @@
 #SBATCH --partition=RM
 #SBATCH --qos=regular
 #SBATCH --exclusive
-#SBATCH --time=02:00:00
-#SBATCH --mail-type=ALL
+#SBATCH --time=02:30:00
 
 total_cores=$(( $(echo $SLURM_JOB_CPUS_PER_NODE | cut -d'(' -f 1) ))
 cores=$(( $total_cores))
@@ -21,7 +20,7 @@ seq_square () {
     Height=$(( 1 << dim[k] ))
     Width=$(( 1 << dim[k] ))
     
-    if [[ $Height < ${TILE:-1} ]]
+    if (( $Height < ${TILE:-1} )); then
       continue
     fi
 

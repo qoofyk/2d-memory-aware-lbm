@@ -56,7 +56,7 @@ linkFlags    = -lm -qopenmp
 optimFlags   = -O3
 #optimFlags   = -xHOST -O3 -ip -no-prec-div -static
 # Compiler flags to use when debug mode is on
-debugFlags   = -g -gdwarf-2 -parallel-source-info=2 -debug inline-debug-info
+debugFlags   = -g -gsplit-dwarf #-parallel-source-info=2 -debug inline-debug-info
 # Compiler flags to use when profile mode is on
 profileFlags = -pg
 
