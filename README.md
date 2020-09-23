@@ -7,7 +7,7 @@ nearest neighbors: D2Q9
 
 We have `origin-(omp)`, `fuse-(omp)`, `two-steps-(tile)-(omp)`, `three steps-(tile)-(omp)` versions
 
-# Build instruction
+# Prerequisite
 
 download scons
 ```bash
